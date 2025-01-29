@@ -6,8 +6,6 @@ import ClipboardButton from "../../atoms/ClipboardButton";
 import type { InputBoxProps } from "../../subatoms/InputBox";
 import type { ClipboardButtonProps } from "../../atoms/ClipboardButton";
 
-//import { hasChildren, isSubChild } from "../../../helpers/render-utils";
-
 const hasChildren = (
   children: React.ReactNode | React.ReactNode[],
   count: number
