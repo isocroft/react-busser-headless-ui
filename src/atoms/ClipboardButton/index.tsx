@@ -1,6 +1,10 @@
 import React from "react";
+import {
+  useUICommands
+} from "react-busser";
 
 import Button from "../../subatoms/Button";
+
 import type { ButtonProps } from "../../subatoms/Button";
 
 const ClipboardButton = ({
@@ -11,20 +15,20 @@ const ClipboardButton = ({
 }: Omit<ButtonProps, "onClick" | "type" | "disabled"> & {
   textToCopy?: string;
 }) => {
+  const commands = useUICommands();
   const canCopy = typeof textToCopy === "string" && textToCopy.length > 0;
   return (
     <Button
       type="button"
       data-clipboard-object="trigger"
-      onClick={(
-        event: React.MouseEvent<HTMLButtonElement> & {
-          target: HTMLButtonElement;
-          currentTarget: HTMLButtonElement;
-        }
-      ) => {
+      onClick={(event: React.MouseEvent<HTMLButtonElement> & { target: HTMLButtonElement, currentTarget: HTMLButtonElement }) => {
         if (canCopy) {
           const button = event.currentTarget!;
-          window.navigator.clipboard.writeText(textToCopy).then(() => {
+          commands.hub.copy(textToCopy).then((isTriggered: boolean) => {
+            if (isTriggered) {
+              return;
+            }
+
             const event = new Event("copy", {
               bubbles: true,
               cancelable: true,
