@@ -1,7 +1,7 @@
 import React from "react";
 
-import Button from "../subatoms/Button";
-import type { ButtonProps } from "../subatoms/Button";
+import Button from "../../subatoms/Button";
+import type { ButtonProps } from "../../subatoms/Button";
 
 const DownloadFileButton = ({
   fileurl,
