@@ -1,7 +1,7 @@
 {
   "name": "react-busser-headless-ui",
   "version": "0.0.1",
-  "description": "A progressive, highly reusable and configurable headless UI component library for ReactJS",
+  "description": "A progressive, atomic, highly reusable, flexible and configurable headless UI component library for ReactJS",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
