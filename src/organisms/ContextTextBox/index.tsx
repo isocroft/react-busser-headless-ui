@@ -22,7 +22,7 @@ const ContextTextBox = ({
   ErrorComponent,
   ...props
 }: TextBoxProps & {
-  valueAsType: boolean;
+  valueAsType?: boolean;
   ErrorComponent?: React.FunctionComponent<{
     isDirty: boolean;
     invalid: boolean;
