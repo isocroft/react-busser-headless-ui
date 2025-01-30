@@ -24,14 +24,12 @@
     "clean": "rm -rf node_modules & rm -f package-lock.json & rm -f yarn.lock & rm -rf dist"
   },
   "dependencies": {
-    "date-fns": "3.6.0",
-    "react-day-picker": "9.5.0",
     "react-busser": "1.0.0"
   },
   "peerDependencies": {
-    "react-day-picker": "9.5.0",
     "date-fns": "3.6.0",
-    "react-busser": "1.0.0"
+    "react-day-picker": "9.5.0",
+    "react-hook-form": "7.52.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.0",
