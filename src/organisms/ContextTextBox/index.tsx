@@ -5,16 +5,6 @@ import TextBox from "../../subatoms/TextBox";
 
 import type { TextBoxProps } from "../../subatoms/TextBox";
 
-/*
-const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
-    setTimeout(() => {
-      if (!value && !props.defaultValue) {
-        resetField(name, { keepTouched: true });
-      }
-    }, 0)
-  );
-*/
-
 const ContextTextBox = ({
   name = "",
   type = "text",
