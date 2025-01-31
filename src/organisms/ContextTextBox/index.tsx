@@ -5,10 +5,21 @@ import TextBox from "../../subatoms/TextBox";
 
 import type { TextBoxProps } from "../../subatoms/TextBox";
 
+/*
+const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
+    setTimeout(() => {
+      if (!value && !props.defaultValue) {
+        resetField(name, { keepTouched: true });
+      }
+    }, 0)
+  );
+*/
+
 const ContextTextBox = ({
   name = "",
   type = "text",
   placeholder,
+  pattern,
   children,
   className = "",
   disabled,
@@ -21,7 +32,7 @@ const ContextTextBox = ({
   labelClassName = "",
   ErrorComponent,
   ...props
-}: TextBoxProps & {
+}: Omit<TextBoxProps, "onChange" | "onBlur"> & {
   valueAsType?: boolean;
   ErrorComponent?: React.FunctionComponent<{
     isDirty: boolean;
@@ -29,30 +40,33 @@ const ContextTextBox = ({
     errorMessage: string | null;
   }>;
 }) => {
-  const { register, unregister, getFieldState, formState, resetField } =
-    useFormContext();
+  const { register, getFieldState, formState } = useFormContext();
 
-  const { isDirty, invalid, error } = getFieldState(name, formState);
-  const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
-    setTimeout(() => {
-      if (!value && !props.defaultValue) {
-        resetField(name, { keepTouched: true });
-      }
-    }, 0)
-  );
-
-  useEffect(() => {
-    return () => {
-      if (typeof timerId === "number") {
-        clearTimeout(timerId);
-      }
-      unregister(name);
-    };
-  }, [timerId]);
+  let { isDirty, invalid, error } = getFieldState(name, formState);
 
   const extraRegisterOptions: Record<string, unknown> = {};
 
+  useEffect(() => {
+    const fieldState = getFieldState(name, formState);
+    invalid = fieldState.invalid;
+    error = fieldState.error;
+  }, [isDirty]);
+
+  /* @NOTE: `maxLength` doesn't work as an option for `require(name, ...)` */
+  /* @CHECK: https://github.com/react-hook-form/documentation/issues/1043 */
   switch (type) {
+    case "text":
+      if (typeof pattern === "string") {
+        extraRegisterOptions.pattern = new RegExp(pattern);
+      }
+      break;
+    case "email":
+      extraRegisterOptions.validate = (data: string) => {
+        const hasAtSymbol = /^(?:[^@]+)(?=\@)/.test(data);
+        const hasTopLevelDomain = /\.[a-z]{2,4}$/.test(data);
+        return hasAtSymbol && hasTopLevelDomain;
+      };
+      break;
     case "number":
     case "range":
       if (typeof min !== "undefined") {
@@ -61,7 +75,7 @@ const ContextTextBox = ({
       if (typeof max !== "undefined") {
         extraRegisterOptions.max = max;
       }
-      if (valueAsType === true) {
+      if (valueAsType === true && type === "number") {
         extraRegisterOptions.valueAsNumber = true;
       }
       break;
@@ -75,12 +89,24 @@ const ContextTextBox = ({
       break;
   }
 
+  const { onChange, onBlur, ref } = register(name, {
+    ...extraRegisterOptions,
+    required,
+    disabled,
+    shouldUnregister: true,
+  });
+
   return (
     <>
       <TextBox
-        {...register(name, { ...extraRegisterOptions, required, disabled })}
-        type={type}
         {...props}
+        name={name}
+        onBlur={onBlur}
+        onChange={onChange}
+        aria-invalid={invalid ? "true" : "false"}
+        ref={(node?: HTMLInputElement | null) => ref(node)}
+        type={type}
+        pattern={pattern}
         placeholder={placeholder}
         className={className}
         wrapperClassName={wrapperClassName}
@@ -92,7 +118,7 @@ const ContextTextBox = ({
         <ErrorComponent
           isDirty={isDirty}
           invalid={invalid}
-          errorMessage={error?.message || null}
+          errorMessage={`${error?.type || ""}: ${error?.message || ""}` || null}
         />
       ) : null}
     </>
@@ -104,3 +130,4 @@ type ContextTextBoxProps = React.ComponentProps<typeof ContextTextBox>;
 export type { ContextTextBoxProps };
 
 export default ContextTextBox;
+
