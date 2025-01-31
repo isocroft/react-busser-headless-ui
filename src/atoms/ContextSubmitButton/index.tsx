@@ -6,7 +6,7 @@ import Button from "../../subatoms/Button";
 import type { ButtonProps } from "../../subatoms/Button";
 
 const ContextSubmitButton: FC<
-  Omit<ButtonProps, "disabled" | "type"> & { isLoading: boolean }
+  Omit<ButtonProps, "disabled" | "type"> & { isLoading?: boolean }
 > = ({ children, className = "", isLoading = false, ...props }) => {
   const { control } = useFormContext();
   const { isValid, isSubmitting } = useFormState({ control });
