@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Toaster } from "sonner";
 
-import { useToastManager } from "./external";
+import { useToastManager } from "./internal";
 
 export { Toaster };
 
