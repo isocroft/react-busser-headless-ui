@@ -42,7 +42,7 @@ const ContextTextBox = ({
     error = fieldState.error;
   }, [isDirty]);
 
-  /* @NOTE: `maxLength` doesn't work as an option for `require(name, ...)` */
+  /* @NOTE: `maxLength` doesn't work as an option for `register(name, ...)` */
   /* @CHECK: https://github.com/react-hook-form/documentation/issues/1043 */
   switch (type) {
     case "text":
