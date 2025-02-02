@@ -7,7 +7,7 @@ A progressive, atomic, highly reusable, flexible and configurable headless UI co
 - Uses modern [HTML](https://en.wikipedia.org/wiki/HTML5) tags for component structure where necessary (e.g. **details**, **summary**, **dialog** and **menu**)
 - Minimizes the use of `useState()` especially for things [CSS](https://en.wikipedia.org/wiki/CSS3_(disambiguation)#:~:text=CSS3%20is%20an%20abbreviation%20for,stylesheet%20language%20for%20structured%20documents.) can already handle. (e.g. toggling the visibility of a DOM node or capturing invalid state)
 - Reduces boilerplate associated with setting up a component especially around structure, testability and reusability.
-- makes use of the very  best third-party libraries to handle forms, utility and state management (i.e. [react-hook-form](https://react-hook-form.com/docs), [react-busser](https://github.com/codesplinta/busser/blob/main/README.md) & [react-day-picker](https://daypicker.dev/)
+- makes use of the very  best third-party libraries to handle forms, utility and state management (i.e. [react-hook-form](https://react-hook-form.com/docs), [react-busser](https://github.com/codesplinta/busser/blob/main/README.md), [react-day-picker](https://daypicker.dev/) & [sonner](https://sonner.emilkowal.ski/getting-started)
 
 ![components-init](./components-init.png)
 ![components-in-use](./components-in-use.png)
