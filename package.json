@@ -29,7 +29,8 @@
   "peerDependencies": {
     "date-fns": "3.6.0",
     "react-day-picker": "9.5.0",
-    "react-hook-form": "7.52.0"
+    "react-hook-form": "7.52.0",
+    "sonner": "1.7.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.0",
