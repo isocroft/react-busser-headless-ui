@@ -8,8 +8,10 @@ import type { RadioBoxProps } from "../RadioBox";
 const ContextRadioBox: FC<
   RadioBoxProps & {
     shouldUnregister?: boolean;
+    requiredErrorMessage?: string;
     ErrorComponent?: React.FunctionComponent<{
       isDirty: boolean;
+      fieldName: string;
       invalid: boolean;
       errorMessage: string | null;
     }>;
@@ -24,6 +26,7 @@ const ContextRadioBox: FC<
   shouldUnregister = true,
   labelClassName = "",
   radioIconSize,
+  requiredErrorMessage,
   radioIconStrokeColor,
   ErrorComponent,
   required,
@@ -42,7 +45,10 @@ const ContextRadioBox: FC<
   }, [isDirty]);
 
   const mergedRegisterOptions: Record<string, unknown> = {
-    required,
+    required:
+      required === true
+        ? requiredErrorMessage || `${name} is required`
+        : undefined,
     disabled,
     shouldUnregister
   };
@@ -86,6 +92,7 @@ const ContextRadioBox: FC<
       {ErrorComponent
         ? <ErrorComponent
             isDirty={isDirty}
+            fieldName={name}
             invalid={invalid}
             errorMessage={error ? `${error.type}: ${error.message}` : null}
           />
