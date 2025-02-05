@@ -6,6 +6,7 @@ import TextBox from "../../subatoms/TextBox";
 import type { TextBoxProps } from "../../subatoms/TextBox";
 
 const ContextTextBox = ({
+  as: C_as = "input",
   name = "",
   type = "text",
   placeholder,
@@ -14,18 +15,21 @@ const ContextTextBox = ({
   className = "",
   disabled,
   required,
-  min,
-  max,
   value,
+  requiredErrorMessage,
   valueAsType = false,
+  shouldUnregister = true,
   wrapperClassName = "",
   labelClassName = "",
   ErrorComponent,
   ...props
-}: Omit<TextBoxProps, "onChange" | "onBlur"> & {
+}: TextBoxProps & {
   valueAsType?: boolean;
+  requiredErrorMessage?: string;
+  shouldUnregister?: boolean;
   ErrorComponent?: React.FunctionComponent<{
     isDirty: boolean;
+    fieldName: string;
     invalid: boolean;
     errorMessage: string | null;
   }>;
@@ -42,49 +46,98 @@ const ContextTextBox = ({
     error = fieldState.error;
   }, [isDirty]);
 
-  /* @NOTE: `maxLength` doesn't work as an option for `register(name, ...)` */
+  /* @NOTE: `maxLength` seems not to work as an option for `register(name, ...)` */
   /* @CHECK: https://github.com/react-hook-form/documentation/issues/1043 */
-  switch (type) {
-    case "text":
-      if (typeof pattern === "string") {
-        extraRegisterOptions.pattern = new RegExp(pattern);
-      }
-      break;
-    case "email":
-      extraRegisterOptions.validate = (data: string) => {
-        const hasAtSymbol = /^(?:[^@]+)(?=\@)/.test(data);
-        const hasTopLevelDomain = /\.[a-z]{2,4}$/.test(data);
-        return hasAtSymbol && hasTopLevelDomain;
+  if (C_as === "input") {
+    switch (type) {
+      case "text":
+      case "password":
+        if (typeof props.maxLength === "number") {
+          extraRegisterOptions.maxLength = {
+            value: props.maxLength,
+            message: `${name} cannot exceed ${props.maxLength} characters`,
+          };
+        }
+
+        if (typeof props.minLength === "number") {
+          extraRegisterOptions.minLength = {
+            value: props.minLength,
+            message: `${name} cannot exceed ${props.minLength} characters`,
+          };
+        }
+
+        if (typeof pattern === "string") {
+          extraRegisterOptions.pattern = new RegExp(pattern);
+        }
+        break;
+      case "email":
+        extraRegisterOptions.validate = (data: string) => {
+          const hasAtSymbol = /^(?:[^@\s]+)(?=\@)/.test(data);
+          const hasTopLevelDomain = /\.[a-z]{2,4}$/.test(data);
+          return hasAtSymbol && hasTopLevelDomain;
+        };
+        break;
+      case "number":
+      case "range":
+        if (typeof props.min !== "undefined") {
+          extraRegisterOptions.min = props.min;
+        }
+        if (typeof props.max !== "undefined") {
+          extraRegisterOptions.max = props.max;
+        }
+        if (valueAsType === true && type === "number") {
+          extraRegisterOptions.valueAsNumber = true;
+        }
+        break;
+      case "date":
+        if (valueAsType === true) {
+          extraRegisterOptions.valueAsDate = true;
+        }
+        break;
+      default:
+        extraRegisterOptions.value = value;
+        break;
+    }
+  } else if (C_as === "textarea") {
+    if (typeof props.maxLength === "number") {
+      extraRegisterOptions.maxLength = {
+        value: props.maxLength,
+        message: `${name} cannot exceed ${props.maxLength} characters`,
       };
-      break;
-    case "number":
-    case "range":
-      if (typeof min !== "undefined") {
-        extraRegisterOptions.min = min;
-      }
-      if (typeof max !== "undefined") {
-        extraRegisterOptions.max = max;
-      }
-      if (valueAsType === true && type === "number") {
-        extraRegisterOptions.valueAsNumber = true;
-      }
-      break;
-    case "date":
-      if (valueAsType === true) {
-        extraRegisterOptions.valueAsDate = true;
-      }
-      break;
-    default:
-      extraRegisterOptions.value = value;
-      break;
+    }
+
+    if (typeof props.minLength === "number") {
+      extraRegisterOptions.minLength = {
+        value: props.minLength,
+        message: `${name} cannot exceed ${props.minLength} characters`,
+      };
+    }
   }
 
-  const { onChange, onBlur, ref } = register(name, {
+  const mergedRegisterOptions: Record<string, unknown> = {
     ...extraRegisterOptions,
-    required,
+    required:
+      required === true
+        ? requiredErrorMessage || `${name} is required`
+        : undefined,
     disabled,
     shouldUnregister: true,
-  });
+  };
+
+  if (typeof props.onChange === "function") {
+    mergedRegisterOptions.onChange = props.onChange;
+    delete props["onChange"];
+  }
+
+  if (typeof props.onBlur === "function") {
+    mergedRegisterOptions.onBlur = props.onBlur;
+    delete props["onBlur"];
+  }
+
+  const { onChange, onBlur, ref } = register(
+    name,
+    mergedRegisterOptions
+  );
 
   return (
     <>
@@ -97,18 +150,27 @@ const ContextTextBox = ({
         ref={(node?: HTMLInputElement | null) => ref(node)}
         type={type}
         pattern={pattern}
+        required={required}
+        disabled={disabled}
         placeholder={placeholder}
         className={className}
         wrapperClassName={wrapperClassName}
         labelClassName={labelClassName}
+        as={C_as}
+        role={
+          (C_as === "input" && type === "text") || C_as === "textarea"
+            ? "textbox"
+            : undefined
+        }
       >
         {children}
       </TextBox>
       {ErrorComponent ? (
         <ErrorComponent
           isDirty={isDirty}
+          fieldName={name}
           invalid={invalid}
-          errorMessage={`${error?.type || ""}: ${error?.message || ""}` || null}
+          errorMessage={error ? `${error.type}: ${error.message}` : null}
         />
       ) : null}
     </>
