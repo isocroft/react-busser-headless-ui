@@ -12,6 +12,7 @@ export const EllipseIcon = ({ size = 16, ...props }: EllipseIconProps) => {
       viewBox="0 0 26 26"
       fill="none"
       {...props}
+      role="presentation"
     >
       <rect
         x="0.5"
