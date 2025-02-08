@@ -13,7 +13,7 @@ export const CircleIcon = ({
   ...props
 }: CircleIconProps) => {
   return (
-    <svg width={size} height={size} viewBox="0 0 26 26" fill="none" {...props}>
+    <svg width={size} height={size} viewBox="0 0 26 26" fill="none" {...props} role="presentation">
       <rect
         x={0.5}
         y={0.5}
