@@ -14,6 +14,10 @@ const Button: FC<React.ComponentProps<"button">> = ({
   );
 };
 
+/*
+<Button id="a-button" type="submit">Click Me!</Button>
+*/
+
 type ButtonProps = React.ComponentProps<typeof Button>;
 
 export type { ButtonProps };
