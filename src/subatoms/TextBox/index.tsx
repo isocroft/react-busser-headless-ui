@@ -263,6 +263,31 @@ const TextBox: FC<
   }
 );
 
+/*
+import React, { useState } from "react";
+
+const [myText, setMyText] = useState<string>("");
+
+
+<TextBox
+  id="mytext"
+  name="mytext"
+  className=""
+  value={myText}
+  onChange={(
+    event: React.ChangeEvent<HTMLInputElement> & {
+      target: HTMLInputElement;
+    }
+  ) => {
+    setMyText(event.target.value);
+  }}
+>
+  <span>My Text:</span>
+</TextBox>
+
+{myText ? myText : "..."}
+*/
+
 type TextBoxProps = React.ComponentProps<typeof TextBox>;
 
 export type { TextBoxProps };
