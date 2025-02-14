@@ -35,6 +35,7 @@ const SwitchBox = React.forwardRef(
       | "required"
       | "readOnly"
       | "onChange"
+      | "defaultChecked"
       | "onBlur"
       | "className"
       | "name"
