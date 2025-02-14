@@ -1,9 +1,9 @@
 import React, { FC, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 
-import RadioBox from "../RadioBox";
+import RadioBox from "../../subatoms/RadioBox";
 
-import type { RadioBoxProps } from "../RadioBox";
+import type { RadioBoxProps } from "../../subatoms/RadioBox";
 
 const ContextRadioBox: FC<
   RadioBoxProps & {
