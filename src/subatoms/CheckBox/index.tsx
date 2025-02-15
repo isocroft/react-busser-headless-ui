@@ -33,7 +33,7 @@ const CheckBox: FC<
   labelClassName = "",
   className = "",
   children,
-  checkIconSize,
+  checkIconSize = 16,
   checkIconFillColor,
   ...props
 }, ref: Ref<HTMLInputElement>) => {
@@ -87,6 +87,10 @@ const CheckBox: FC<
         right: 0;
         bottom: 0;
         left: 0;
+      }
+
+      .check_hidden-input svg {
+        display: block;
       }
 
       /*.check_hidden-input:checked + svg path {
@@ -157,7 +161,7 @@ const CheckBox: FC<
   <CheckBox
     name="checky"
     id="checky"
-    value={toggle}
+    checked={toggle}
     onChange={(event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
       setToggle(event.target.checked);
   }}>
