@@ -10,7 +10,11 @@ A progressive, atomic, highly reusable, flexible and configurable headless UI co
 - makes use of the very  best third-party libraries to handle forms, toasts, utilities and state management (i.e. [react-hook-form](https://react-hook-form.com/docs), [react-busser](https://github.com/codesplinta/busser/blob/main/README.md), [react-day-picker](https://daypicker.dev/), [react-dropzone](https://react-dropzone.js.org/#src) & [sonner](https://sonner.emilkowal.ski/getting-started)
 
 ![components-init](./components-init.png)
-![components-in-use](./components-in-use.png)
+![component-next-init](./component-next-init.png)
+![component-last-init](./component-last-init.png)
+![component-showcase](./component-showcase.png)
+![component-next-showcase](./component-next-showcase.png)
+![component-last-showcase](./component-last-showcase.png)
 
 ## Preamble
 
