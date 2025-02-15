@@ -11,7 +11,6 @@ A progressive, atomic, highly reusable, flexible and configurable headless UI co
 
 ![components-init](./components-init.png)
 ![component-next-init](./component-next-init.png)
-![component-last-init](./component-last-init.png)
 ![component-showcase](./component-showcase.png)
 ![component-next-showcase](./component-next-showcase.png)
 ![component-last-showcase](./component-last-showcase.png)
