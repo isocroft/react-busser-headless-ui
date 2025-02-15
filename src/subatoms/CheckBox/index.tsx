@@ -149,6 +149,23 @@ const CheckBox: FC<
   );
 });
 
+/*
+  import React, { useState } from "react";
+
+  const [toggle, setToggle] = useState(true);
+
+  <CheckBox
+    name="checky"
+    id="checky"
+    value={toggle}
+    onChange={(event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+      setToggle(event.target.checked);
+  }}>
+    <span>Label:</span>
+  </CheckBox>
+*/
+
+
 type CheckBoxProps = React.ComponentProps<typeof CheckBox>;
 
 export type { CheckBoxProps };
