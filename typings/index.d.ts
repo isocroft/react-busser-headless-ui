@@ -17,6 +17,16 @@ declare global {
     target: IDBEventTarget;
   }
 
+  interface DataTransfer {
+    dropEffect: "none" | "copy" | "link" | "move";
+    effectAllowed : "none" | "copy" | "copyLink" | "move";
+    setData: (format: string, data: string) => void
+  }
+
+  interface DragEvent extends Event { 
+    dataTransfer: DataTransfer
+  }
+
   interface File extends Blob {
     readonly lastModified: number;
     readonly name: string;
@@ -25,6 +35,8 @@ declare global {
 
   interface Navigator {
     readonly standalone?: boolean;
+    msSaveBlob?: (blob: Blob, defaultName?: string) => boolean;
+    msSaveOrOpenBlob: (blobOrBase64: Blob | string, filename: string) => void;
   }
 
   interface Window {
