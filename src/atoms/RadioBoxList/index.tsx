@@ -146,7 +146,6 @@ const RadioBoxList = <L extends { text: string; value: string }>({
   | "name"
   | "disabled"
   | "required"
-  | "onChange"
   | "onBlur"
   | "radioIconSize"
   | "radioIconStrokeColor"
@@ -156,6 +155,12 @@ const RadioBoxList = <L extends { text: string; value: string }>({
   | "displayStyle"
 > & {
   radioDefaultValue?: string;
+  onChange?: (
+    event: React.ChangeEvent<HTMLInputElement> & {
+      target: HTMLInputElement;
+      currentValue: string;
+    }
+  ) => void;
   list: Array<L>;
   tabIndex?: number;
 } & CustomElementTagProps<"div" | "section"> &
