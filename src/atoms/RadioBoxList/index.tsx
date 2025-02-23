@@ -161,7 +161,7 @@ const RadioBoxList = <L extends { text: string; value: string }>({
       currentValue: string;
     }
   ) => void;
-  list: Array<L>;
+  list?: Array<L>;
   tabIndex?: number;
 } & CustomElementTagProps<"div" | "section"> &
   Omit<React.ComponentProps<"div">, "align">) => {
