@@ -16,13 +16,15 @@
     "dist"
   ],
   "scripts": {
-    "build": "yarn build:esm && yarn build:cjs && yarn build:types",
+    "build": "yarn clean & yarn build:esm & yarn build:cjs & yarn build:types",
     "build:umd": "rollup -c",
     "build:esm": "cross-env BABEL_ENV=esm babel src --extensions .ts,.tsx -d dist/esm --source-maps",
     "build:cjs": "cross-env BABEL_ENV=cjs babel src --extensions .ts,.tsx -d dist/cjs --source-maps",
     "build:types": "tsc --emitDeclarationOnly --declaration --declarationDir dist/types",
     "test": "jest --env=jsdom --passWithNoTests tests/ --runInBand",
-    "clean": "rm -rf node_modules & rm -f package-lock.json & rm -f yarn.lock & rm -rf dist"
+    "clean:deep": "rm -rf node_modules & rm -f package-lock.json & rm -f yarn.lock & rm -rf dist",
+    "clean": "rm -rf dist",
+    "reset": "yarn clean:deep & yarn install & yarn build"
   },
   "dependencies": {
     "date-fns": "3.6.0",
