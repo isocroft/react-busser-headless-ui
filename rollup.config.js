@@ -3,7 +3,7 @@ import typescript from '@rollup/plugin-typescript';
 export default {  
   input: 'src/index.ts',
   output: {
-    file: 'dist/react-busser-headless-ui.js',
+    file: 'dist/umd/index.js',
     format: 'umd',
     name: 'RbhUI',
     sourcemap: true
