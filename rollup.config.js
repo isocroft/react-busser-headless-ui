@@ -8,6 +8,6 @@ export default {
     name: 'RbhUI',
     sourcemap: true
   },
-  external: ['react-busser', 'lodash.pick', 'date-fns'],
+  // external: ['react-busser', 'lodash.pick', 'date-fns', 'sonner'],
   plugins: [typescript()]
 };  
