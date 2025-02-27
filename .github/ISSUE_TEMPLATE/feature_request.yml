@@ -2,6 +2,7 @@ name: ✨Feature Request
 description: Request a new feature or enhancement
 labels: ["enhancement"]
 title: "[FEAT]: "
+assignees: ["isocroft"]
 body:
   - type: markdown
     attributes:
