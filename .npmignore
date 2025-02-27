@@ -1,0 +1,9 @@
+coverage
+.github
+node_modules
+.DS_Store
+npm-debug.log
+rollup.config.js
+babel.config.js
+tests
+.editorconfig
