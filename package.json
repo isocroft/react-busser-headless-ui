@@ -17,8 +17,9 @@
   ],
   "scripts": {
     "build": "yarn build:esm && yarn build:cjs && yarn build:types",
-    "build:esm": "cross-env BABEL_ENV=esm babel components --extensions .tsx -d dist/esm --source-maps",
-    "build:cjs": "cross-env BABEL_ENV=cjs babel components --extensions .tsx -d dist/cjs --source-maps",
+    "build:umd": "rollup -c",
+    "build:esm": "cross-env BABEL_ENV=esm babel src --extensions .ts,.tsx -d dist/esm --source-maps",
+    "build:cjs": "cross-env BABEL_ENV=cjs babel src --extensions .ts,.tsx -d dist/cjs --source-maps",
     "build:types": "tsc --emitDeclarationOnly --declaration --declarationDir dist/types",
     "test": "jest --env=jsdom --passWithNoTests tests/ --runInBand",
     "clean": "rm -rf node_modules & rm -f package-lock.json & rm -f yarn.lock & rm -rf dist"
@@ -41,6 +42,7 @@
     "@babel/preset-react": "^7.12.0",
     "@babel/preset-typescript": "^7.12.0",
     "@babel/runtime": "^7.12.0",
+    "@rollup/plugin-typescript": "^12.1.2",
     "@svgr/core": "^5.5.0",
     "@svgr/plugin-jsx": "^5.5.0",
     "@svgr/plugin-prettier": "^5.5.0",
@@ -54,6 +56,7 @@
     "jest-environment-jsdom": "26.6.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "rollup": "^4.31.0",
     "title-case": "^3.0.3",
     "ts-jest": "26.4.4",
     "typescript": "4.4.4"
