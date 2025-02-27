@@ -3,6 +3,9 @@
     "./src/**/*"
   ],
   "compilerOptions": {
+    "moduleResolution": "node",
+    "removeComments": false,
+    "sourceMap": true,
     "target": "ES5",  
     "module": "ESNext",  
     "declaration": true,  
