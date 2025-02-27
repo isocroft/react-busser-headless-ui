@@ -24,6 +24,7 @@
     "test": "jest --env=jsdom --passWithNoTests tests/ --runInBand",
     "clean:deep": "rm -rf node_modules & rm -f package-lock.json & rm -f yarn.lock & rm -rf dist",
     "clean": "rm -rf dist",
+    "tidy": "prettier --write .",
     "reset": "yarn clean:deep & yarn install & yarn build"
   },
   "dependencies": {
