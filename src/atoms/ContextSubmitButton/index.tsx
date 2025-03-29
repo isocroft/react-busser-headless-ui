@@ -6,8 +6,8 @@ import Button from "../../subatoms/Button";
 import type { ButtonProps } from "../../subatoms/Button";
 
 const ContextSubmitButton: FC<
-  Omit<ButtonProps, "disabled" | "type"> & { isLoading?: boolean }
-> = ({ children, className = "", isLoading = false, ...props }) => {
+  Omit<ButtonProps, "disabled" | "type"> & { isLoading?: boolean, ignoreStatus?: boolean }
+> = ({ children, className = "", isLoading = false, ignoreStatus = false ...props }) => {
   const { control } = useFormContext();
   const { isValid, isSubmitting } = useFormState({ control });
 
@@ -15,7 +15,8 @@ const ContextSubmitButton: FC<
     <Button
       {...props}
       type={"submit"}
-      disabled={!isValid || isSubmitting || isLoading}
+      disabled={(ignoreStatus ? false : !isValid) || isSubmitting || isLoading}
+      data-busy={JSON.stringify(isSubmitting || isLoading)}
       className={className}
     >
       {children}
