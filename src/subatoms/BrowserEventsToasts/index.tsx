@@ -21,6 +21,12 @@ export default function BrowserEventToasts = ({ timeout = FIVE_SECONDS_DURATION 
         console.info("text copied to clipboard!");
       }
     };
+    const onDownload = (event: CustomEvent) => {
+      showToast(
+        { title: "User Action", description: `File: '${event.detail}' downloaded!` }
+      );
+      console.info("file downloaded!");
+    };
     const onPrintingErrored = () => {
       showToast(
         { title: "User Action", description: "Oops! An error occured while printing" },
@@ -61,7 +67,9 @@ export default function BrowserEventToasts = ({ timeout = FIVE_SECONDS_DURATION 
         { title: "Network Connectivity", description: "You seem to not be connected to the internet!"},
       );
     };
+
     window.addEventListener('copy', onCopy, false);
+    window.addEventListener('download', onDownload, false);
     window.addEventListener('printingerrored', onPrintingErrored, false);
     window.addEventListener('beforeprintstart', onBeforePrintStart, false);
     window.addEventListener('printingstarted', onPrintingStarted, false);
@@ -71,6 +79,7 @@ export default function BrowserEventToasts = ({ timeout = FIVE_SECONDS_DURATION 
     
     return () => {
       window.removeEventListener('copy', onCopy, false);
+      window.removeEventListener('download', onDownload, false);
       window.removeEventListener('printingerrored', onPrintingErrored, false);
       window.removeEventListener('beforeprintstart', onBeforePrintStart, false);
       window.removeEventListener('printingstarted', onPrintingStarted, false);
