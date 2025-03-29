@@ -16,7 +16,7 @@ const DownloadFileButton = ({
   return (
     <Button
       type="button"
-      onClick={async () => {
+      onClick={() => {
         const url = typeof fileurl === "string" ? fileurl : "";
         const name = typeof filename === "string" ? filename : "";
 
@@ -29,8 +29,12 @@ const DownloadFileButton = ({
         a.download = name;
         a.target = "_blank";
         document.body.appendChild(a);
-        await a.click();
+        a.click();
         document.body.removeChild(a);
+
+        window.dispatchEvent(new CustomEvent("download", {
+          detail: url
+        })
       }}
       {...props}
       className={className}
