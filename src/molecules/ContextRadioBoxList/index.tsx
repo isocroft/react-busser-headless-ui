@@ -1,4 +1,4 @@
-import React, { FC, Ref, useRef, useEffect, useMemo } from "react";
+import React, { FC, CSSProperties, Ref, useRef, useEffect, useMemo } from "react";
 import type { RadioBoxListProps } from "./RadioBoxList";
 import { RadioIcon } from "./RadioBoxList";
 
@@ -56,20 +56,11 @@ type ContextRadioBoxListControlProps = {
   "type" | "placeholder" | "crossOrigin" | "ref" | "value"
 >;
 
-/*
-const [timerId] = useState<ReturnType<typeof setTimeout>>(() =>
-    setTimeout(() => {
-      if (!props.value && !props.defaultCheck) {
-        resetField(name, { keepTouched: true })
-      }
-    }, 0)
-  );
-*/
-
 const InputOption: FC<
   {
     labelClassName?: string;
     wrapperClassName?: string;
+    wrapperStyle?: CSSProperties;
   } & ContextRadioBoxListControlProps
 > = React.forwardRef(function InputOption(
   {
@@ -81,6 +72,7 @@ const InputOption: FC<
     wrapperClassName = "",
     labelClassName = "",
     className = "",
+    wrapperStyle,
     radioIconFillColor,
     radioIconStrokeColor,
     radioIconSize = 16,
@@ -92,7 +84,7 @@ const InputOption: FC<
   ref
 ) {
   return (
-    <div className={wrapperClassName}>
+    <div className={wrapperClassName ? wrapperClassName : ""} style={wrapperStyle}>
       <span
         className={`
           radio_control-icon-box ${className}
