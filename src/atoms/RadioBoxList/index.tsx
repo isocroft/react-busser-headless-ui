@@ -1,4 +1,4 @@
-import React, { FC, useRef, useCallback, useEffect } from "react";
+import React, { FC, CSSProperties, useRef, useCallback, useEffect } from "react";
 
 import { CircleIcon } from "../../subatoms/RadioBox/assets/CircleIcon";
 
@@ -31,6 +31,7 @@ type RadioBoxListControlProps = {
   displayStyle?: "transparent" | "adjusted";
   labelClassName?: string;
   wrapperClassName?: string;
+  wrapperStyle?: CSSProperties;
   radioIconFillColor?: string;
   radioIconStrokeColor?: string;
   radioIconSize?: number;
@@ -57,6 +58,7 @@ const Option: FC<
   labelClassName = "",
   className = "",
   displayStyle = "transparent",
+  wrapperStyle,
   radioIconFillColor,
   radioIconStrokeColor,
   radioIconSize = 16,
@@ -80,7 +82,7 @@ const Option: FC<
   );
 
   return (
-    <div className={wrapperClassName}>
+    <div className={wrapperClassName ? wrapperClassName : ""} style={wrapperStyle}>
       <span
         className={`
           radio_control-icon-box ${className}
