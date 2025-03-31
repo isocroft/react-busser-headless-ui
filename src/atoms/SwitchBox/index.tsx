@@ -1,4 +1,4 @@
-import React, { Ref, useEffect } from "react";
+import React, { Ref, CSSProperties, useEffect } from "react";
 
 import { EllipseIcon } from "./assets/EllipseIcon";
 
@@ -26,6 +26,7 @@ const SwitchBox = React.forwardRef(
       labelClassName = "",
       className = "",
       labelPosition = "beforeInput",
+      wrapperStyle,
       onChange,
       ...props
     }: Pick<
@@ -47,6 +48,7 @@ const SwitchBox = React.forwardRef(
       activeText?: string;
       inactiveText?: string;
       wrapperClassName?: string;
+      wrapperStyle?: CSSProperties;
       labelClassName?: string;
       labelPosition?: "beforeInput" | "afterInput";
     },
@@ -224,7 +226,7 @@ const SwitchBox = React.forwardRef(
     }, [widgetSize]);
 
     return (
-      <div className={wrapperClassName} tabIndex={tabIndex}>
+      <div className={wrapperClassName} style={wrapperStyle} tabIndex={tabIndex}>
         {hasChildren(children, 0)
           ? null
           : (labelPosition === "beforeInput" && (
