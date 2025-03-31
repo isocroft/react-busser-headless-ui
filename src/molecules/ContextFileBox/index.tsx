@@ -23,6 +23,7 @@ const ContextFileBox: FC<
   disabled,
   tabIndex = 0,
   wrapperClassName = "",
+  wrapperStyle,
   className = "",
   shouldUnregister = true,
   labelClassName = "",
@@ -75,6 +76,7 @@ const ContextFileBox: FC<
         onBlur={onBlur}
         tabIndex={tabIndex}
         wrapperClassName={wrapperClassName}
+        wrapperStyle={wrapperStyle}
         labelClassName={labelClassName}
       >
         {children}
