@@ -25,6 +25,7 @@ const ContextRadioBox: FC<
   displayStyle = "transparent",
   shouldUnregister = true,
   labelClassName = "",
+  wrapperStyle,
   radioIconSize,
   requiredErrorMessage,
   radioIconStrokeColor,
@@ -83,6 +84,7 @@ const ContextRadioBox: FC<
         displayStyle={displayStyle}
         tabIndex={tabIndex}
         wrapperClassName={wrapperClassName}
+        wrapperStyle={wrapperStyle}
         labelClassName={labelClassName}
         radioIconSize={radioIconSize}
         radioIconStrokeColor={radioIconStrokeColor}
