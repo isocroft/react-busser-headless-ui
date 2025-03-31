@@ -1,4 +1,4 @@
-import React, { FC, Ref, useRef, useCallback, useEffect } from "react";
+import React, { FC, Ref, CSSProperties, useRef, useCallback, useEffect } from "react";
 
 type CustomElementTagProps<T extends React.ElementType> =
   React.ComponentProps<T> & {
@@ -58,6 +58,7 @@ const TextBox: FC<
       type?: "text" | "password" | "email" | "search" | "url";
     } & {
       wrapperClassName?: string;
+      wrapperStyle?: CSSProperties;
       labelPosition?: "beforeInput" | "afterInput";
       labelClassName?: string;
       valueSync?: boolean;
@@ -77,10 +78,11 @@ const TextBox: FC<
       size,
       onChange,
       children,
-      wrapperClassName,
+      wrapperClassName = "",
       labelPosition = "afterInput",
-      labelClassName,
+      labelClassName = "",
       className,
+      wrapperStyle,
       defaultValue = "",
       valueSync = false,
       tabIndex = 0,
@@ -180,6 +182,7 @@ const TextBox: FC<
           className={`text_wrapper-box ${
             wrapperClassName ? wrapperClassName : ""
           }`}
+          style={wrapperStyle}
         >
           {hasChildren(children, 0)
             ? null
