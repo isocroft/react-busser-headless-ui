@@ -1,4 +1,4 @@
-import React, { FC, Ref, useRef, useEffect } from "react";
+import React, { FC, Ref, CSSProperties, useRef, useEffect } from "react";
 
 declare module "react" {
   interface InputHTMLAttributes<T> extends React.HTMLAttributes<T> {
@@ -33,6 +33,7 @@ const FileBox: FC<
   > & {
     className?: string;
     wrapperClassName?: string;
+    wrapperStyle?: CSSProperties;
     labelClassName?: string;
     webkitdirectory?: boolean;
     labelPosition?: "beforeInput" | "afterInput";
@@ -45,11 +46,12 @@ const FileBox: FC<
       id,
       name,
       tabIndex = 0,
-      wrapperClassName,
-      labelClassName,
+      wrapperClassName = "",
+      labelClassName = "",
       labelPosition = "beforeInput",
       prompt = "No File Chosen",
       accept,
+      wrapperStyle,
       webkitdirectory = false,
       multiple = false,
       children,
@@ -200,6 +202,7 @@ const FileBox: FC<
         tabIndex={tabIndex}
         {...props}
         className={`file_wrapper-box ${wrapperClassName}`}
+        style={wrapperStyle}
         ref={wrapperDivRef}
       >
         {hasChildren(children, 0)
