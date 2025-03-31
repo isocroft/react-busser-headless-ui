@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from "react";
+import React, { FC, CSSProperties, useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 
 import SwitchBox from "../../atoms/SwitchBox";
@@ -24,6 +24,7 @@ const ContextSwitchBox: FC<
   tabIndex = 0,
   shouldUnregister = true,
   labelClassName = "",
+  wrapperStyle,
   requiredErrorMessage,
   ErrorComponent,
   required,
@@ -80,6 +81,7 @@ const ContextSwitchBox: FC<
         tabIndex={tabIndex}
         wrapperClassName={wrapperClassName}
         labelClassName={labelClassName}
+        wrapperStyle={wrapperStyle}
       >
         {children}
       </SwitchBox>
