@@ -1,4 +1,4 @@
-import React, { FC, Ref, useEffect } from "react";
+import React, { FC, Ref, CSSProperties, useEffect } from "react";
 
 const hasChildren = (
   children: React.ReactNode | React.ReactNode[],
@@ -24,6 +24,7 @@ const RadioIcon = {
 const RadioBox: FC<
   {
     wrapperClassName?: string;
+    wrapperStyle?: CSSProperties;
     labelClassName?: string;
     labelPosition?: "beforeInput" | "afterInput";
     children?: React.ReactNode;
@@ -43,6 +44,7 @@ const RadioBox: FC<
       labelPosition = "beforeInput",
       className = "",
       children,
+      wrapperStyle,
       radioIconSize,
       radioIconStrokeColor,
       displayStyle = "transparent",
@@ -139,7 +141,7 @@ const RadioBox: FC<
     }, []);
 
     return (
-      <div className={wrapperClassName} tabIndex={tabIndex}>
+      <div className={wrapperClassName} style={wrapperStyle} tabIndex={tabIndex}>
         {hasChildren(children, 0)
           ? null
           : (labelPosition === "beforeInput" && (
