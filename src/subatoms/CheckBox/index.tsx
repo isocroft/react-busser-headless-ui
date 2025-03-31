@@ -1,4 +1,4 @@
-import React, { FC, Ref, useEffect } from "react";
+import React, { FC, Ref, CSSProperties, useEffect } from "react";
 
 const hasChildren = (
   children: React.ReactNode | React.ReactNode[],
@@ -17,6 +17,7 @@ const CheckBox: FC<
   {
     placeholder?: string;
     wrapperClassName?: string;
+    wrapperStyle?: CSSProperties;
     labelClassName?: string;
     displayStyle?: "transparent" | "adjusted";
     checkIconSize?: number;
@@ -33,6 +34,7 @@ const CheckBox: FC<
       labelClassName = "",
       className = "",
       children,
+      wrapperStyle,
       checkIconSize = 27,
       checkIconFillColor,
       displayStyle = "transparent",
@@ -69,67 +71,67 @@ const CheckBox: FC<
       checkStyle.id = "react-busser-headless-ui_check";
 
       checkStyle.innerHTML = `
-      .check_wrapper-box {
-        position: static;
-        display: inline-block; /* shrink-to-fit trigger */
-        min-height: 0;
-        min-width: fit-content;
-      }
-
-      .check_hidden-input[data-display-style="transparent"] {
-        opacity: 0;
-      }
-
-      .check_hidden-input[data-display-style="adjusted"] {
-        -moz-appearance: -moz-none;
-        -moz-apperance: none;
-        -webkit-appearance: none;
-        appearance: none;
-      }
-
-      .check_hidden-input {
-        position: absolute;
-        display: inline-block;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        border: none;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        z-index: 1;
-        cursor: pointer;
-      }
-
-      .check_hidden-input + svg {
-        display: block;
-        pointer-events: none;
-        position: relative;
-        z-index: 10;
-      }
-
-      /*.check_hidden-input + svg circle {
-        opacity: 0;
-      }*/
-
-      .check_hidden-input:not(:checked) + svg path {
-        stroke: transparent;
-      }
-
-      /*.check_hidden-input:checked + svg path {
-        stroke: #ffffff;
-      }*/
-
-      .check_control-icon-box {
-        min-height: 0;
-        min-width: fit-content;
-        position: relative;
-        display: inline-block;
-        vertical-align: middle;
-      }
-    `;
+        .check_wrapper-box {
+          position: static;
+          display: inline-block; /* shrink-to-fit trigger */
+          min-height: 0;
+          min-width: fit-content;
+        }
+  
+        .check_hidden-input[data-display-style="transparent"] {
+          opacity: 0;
+        }
+  
+        .check_hidden-input[data-display-style="adjusted"] {
+          -moz-appearance: -moz-none;
+          -moz-apperance: none;
+          -webkit-appearance: none;
+          appearance: none;
+        }
+  
+        .check_hidden-input {
+          position: absolute;
+          display: inline-block;
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          border: none;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          z-index: 1;
+          cursor: pointer;
+        }
+  
+        .check_hidden-input + svg {
+          display: block;
+          pointer-events: none;
+          position: relative;
+          z-index: 10;
+        }
+  
+        /*.check_hidden-input + svg circle {
+          opacity: 0;
+        }*/
+  
+        .check_hidden-input:not(:checked) + svg path {
+          stroke: transparent;
+        }
+  
+        /*.check_hidden-input:checked + svg path {
+          stroke: #ffffff;
+        }*/
+  
+        .check_control-icon-box {
+          min-height: 0;
+          min-width: fit-content;
+          position: relative;
+          display: inline-block;
+          vertical-align: middle;
+        }
+     `;
       window.document.head.appendChild(checkStyle);
 
       return () => {
@@ -139,7 +141,7 @@ const CheckBox: FC<
 
     return (
       <>
-        <div className={wrapperClassName} role="group">
+        <div className={wrapperClassName} style={wrapperStyle} role="group">
           <span
             className={`
             check_control-icon-box ${className}
