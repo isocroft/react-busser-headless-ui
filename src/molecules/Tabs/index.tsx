@@ -1,4 +1,4 @@
-import React, { FC, useRef, useEffect } from "react";
+import React, { FC, CSSProperties, useRef, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 
 import { useTabsCore } from "./internal";
@@ -202,12 +202,14 @@ const TabTitle: FC<TabTitleProps> = ({
 type TabsHeaderProps = CustomElementTagProps<"menu" | "ul"> & {
   activeTabTitleIndex?: number;
   wrapperClassName?: string;
+  wrapperStyle?: CSSProperties;
 };
 
 const TabsHeader: FC<TabsHeaderProps> = ({
   as: Component = "ul",
   className = "",
   wrapperClassName = "",
+  wrapperStyle,
   activeTabTitleIndex,
   children,
   ...props
@@ -235,7 +237,7 @@ const TabsHeader: FC<TabsHeaderProps> = ({
   }, [activeTabTitleIndex]);
 
   return (
-    <div className={`tabs_header-box ${wrapperClassName}`} role="group">
+    <div className={`tabs_header-box ${wrapperClassName}`} style={wrapperStyle} role="group">
       <Component
         className={`tabs_header-inner-box ${className}`}
         {...props}
@@ -280,11 +282,11 @@ const TabsBody: FC<TabsBodyProps> = ({
   activeTabPanelIndex,
   ...props
 }) => {
-  const activeTabPanel = React.Children.toArray(children)[activeTabPanelIndex];
+  const activeTabPanel = hasChildren(children, 0) ? null : React.Children.toArray(children)[activeTabPanelIndex];
 
   return (
     <section className={`tabs_body-box ${className}`} role="group" {...props}>
-      {isSubChild(activeTabPanel, "TabPanel") ? activeTabPanel : null}
+      {activeTabPanel && isSubChild(activeTabPanel, "TabPanel") ? activeTabPanel : null}
     </section>
   );
 };
@@ -308,9 +310,14 @@ Tabs.TabPanel = TabPanel;
 
 // <Tabs activeTabIndex={1} activeTabIdQuery={"group_settings_tab"}>
 //   <TabsHeader>
-//     <TabTitle>General</TabTitle>
+//     <TabTitle>Maintenance</TabTitle>
+//     <TabTitle>Settings</TabTitle>
 //   </TabsHeader>
 //   <TabsBody>
+//     <TabPanel>
+//       <h4>System Maintenance</h4>
+//       <p>All system workflow patterns</p>
+//     </TabPanel>
 //     <TabPanel>
 //       <h4>General Settings</h4>
 //       <p>All settings for user app</p>
