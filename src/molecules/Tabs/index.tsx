@@ -132,6 +132,7 @@ const Tabs = ({
 
     if (
       styleSheetsOnly.length > 0 &&
+      /* @ts-ignore */
       styleSheetsOnly.includes("react-busser-headless-ui_tabs")
     ) {
       return;
