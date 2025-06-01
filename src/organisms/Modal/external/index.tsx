@@ -43,7 +43,7 @@ function useModalCore(styles: {
   const [modals, setModals] = useState<React.ReactElement[]>([]);
   const controls = useMemo(() => {
     const idGeneratorRoutine = sequentialIdGeneratorFactory();
-    const close = (modalRefId: string, callback?: () => void) => {
+    const close = (modalRefId: string) => {
       let id = modalRefId;
 
       if (typeof HTMLDialogElement == "function") {
@@ -74,15 +74,11 @@ function useModalCore(styles: {
           return clonedPrevModals;
         });
       }
-
-      if (typeof callback === "function") {
-        callback();
-      }
     };
 
     return {
       show(
-        node: React.ReactNode,
+        node: React.ReactElement,
         reference: React.MutableRefObject<(HTMLDivElement & HTMLDialogElement) | null>,
         callback: () => void
       ) {
@@ -98,7 +94,8 @@ function useModalCore(styles: {
             className={styles.className}
             wrapperClassName={styles.wrapperClassName}
             id={id}
-            close={close.bind(null, id, callback)}
+            close={close.bind(null, id)}
+            onClose={callback}
             ref={reference}
           >
             {node}
@@ -148,7 +145,7 @@ const useModalControls = (
     describedBy: string;
   }
 ) => {
-  const modalNode = useRef<React.ReactNode | null>(null);
+  const modalNode = useRef<React.ReactElement | null>(null);
   const [modalVisibilityState, setModalVisibilityState, unsetParamsOnUrl] =
     useSearchParamsState<"hidden" | "visible">(id, false, "hidden");
   const [modalRef] = useOutsideClick<HTMLDivElement>((subject) => {
@@ -209,8 +206,8 @@ const useModalControls = (
     }
   } else {
     if (modalRef.current !== null) {
-      setModalVisibilityState("hidden");
       controls.close(id || modalRef.current.id);
+      setModalVisibilityState("hidden");
     }
   }
 
@@ -218,7 +215,7 @@ const useModalControls = (
     get isModalVisible() {
       return modalVisibilityState === "visible";
     },
-    showModal(node: React.ReactNode) {
+    showModal(node: React.ReactElement) {
       if (
         hasChildren(node, 0) ||
         !React.isValidElement<{ id?: string }>(node)
@@ -250,8 +247,8 @@ const useModalControls = (
     },
     closeModal($id?: string) {
       if (modalRef.current) {
-        setModalVisibilityState("hidden");
         controls.close($id || modalRef.current.id);
+        setModalVisibilityState("hidden");
         modalRef.current = null;
       }
     },
