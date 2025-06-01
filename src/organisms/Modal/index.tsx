@@ -1,6 +1,8 @@
 import React, { FC } from "react";
 import ReactDOM from "react-dom";
 
+import { useLockBodyScroll } from "react-busser";
+
 const hasChildren = (
   children: React.ReactNode | React.ReactNode[],
   count: number
@@ -175,6 +177,7 @@ const Modal = Object.assign(
     (HTMLDivElement & HTMLDialogElement),
     React.HTMLAttributes<(HTMLDivElement & HTMLDialogElement)> & {
       wrapperClassName?: string;
+      onClose: () => void;
       close: () => void;
     }
   >(function Modal(props, ref) {
@@ -184,12 +187,23 @@ const Modal = Object.assign(
       className = "",
       children: allChildren,
       close,
+      onClose,
       ...modalProps
     } = props;
 
+    useLockBodyScroll();
+
+    useEffect(() => {
+      return () => {
+        if (typeof window.HTMLDialogElement !== 'function') {
+          onClose();
+        }
+      };
+    }, []);
+
     return ReactDOM.createPortal(
       typeof window.HTMLDialogElement === 'function'
-      ? (<dialog className={className || ""} id={id} role="dialog" aria-modal ref={ref} onClose={() => undefined}>
+      ? (<dialog className={className || ""} id={id} role="dialog" aria-modal ref={ref} onClose={onClose}>
           {renderChildren(allChildren, {
             close: close,
             parent: "Modal",
