@@ -73,6 +73,13 @@ export const useTextFileDownload = (textFileMimeType = "text/plain") => {
         );
         link.click();
       }
+
+      /* @TODO: Add Custom Event for 'download' */
+      /*
+        window.dispatchEvent(new CustomEvent("download", {
+          detail: url
+        });
+      */
     }
   }
 };
@@ -85,6 +92,12 @@ export const useBinaryFileDownload = (binaryFileMimeType = "application/octet-st
         const saveBlob = (arrayBuffer) =>
           const blob = new Blob(arrayBuffer, { type: binaryFileMimeType })
           window.navigator.msSaveBlob(blob, binaryFileName);
+          /* @TODO: Add Custom Event for 'download' */
+          /*
+            window.dispatchEvent(new CustomEvent("download", {
+              detail: url
+            });
+          */
         };
         if (binaryFileContent instanceof Uint8Array) {
           return saveBlob(binaryFileContent);
@@ -115,6 +128,13 @@ export const useBinaryFileDownload = (binaryFileMimeType = "application/octet-st
             binaryFileName
         );
         link.click();
+
+        /* @TODO: Add Custom Event for 'download' */
+        /*
+          window.dispatchEvent(new CustomEvent("download", {
+            detail: url
+          });
+        */
       }
     } 
   }
