@@ -50,8 +50,12 @@ const PrintPageButton = ({
     <Button
       type="button"
       data-printer-object="trigger"
-      onClick={async () => {
-        await commands.hub.print()
+      aria-busy={false}
+      onClick={async (event: React.MouseEvent<HTMLButtonElement> & { target: HTMLButtonElement }) => {
+        const thisButton = event.target;
+        thisButton.setAttribute("aria-busy", "true");
+        await commands.hub.print();
+        thisButton.setAttribute("aria-busy", "false");
       }}
       {...props}
       className={className}
