@@ -58,12 +58,15 @@ function SearchBarControls({
   const [stateValue] = useSearchParamStateValue(searchParamName);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const searchParamValue = useMemo(() => {
+    return stateValue[searchParamName];
+  }, [stateValue, searchParamName]);
   const canSetButtonDisabled = useMemo(() => {
     return inputRef.current !== null && inputRef.current.value !== "";
   }, [inputRef.current]);
 
   return (
-    <div {...props} key={filter !== "" ? filter : "default"} role="region">
+    <div {...props} key={searchParamValue !== "" ? searchParamValue : "default"} role="region">
       <fieldset role="group" className={wrapperClassName}>
         <input
           name={searchParamName}
@@ -76,7 +79,7 @@ function SearchBarControls({
           className={textBoxClassName}
           autoComplete="no"
           spellCheck="false"
-          defaultValue={stateValue[searchParamName]}
+          defaultValue={searchParamValue}
           ref={inputRef}
         />
         <Button
