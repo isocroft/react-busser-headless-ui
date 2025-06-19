@@ -16,25 +16,34 @@ const DownloadFileButton = ({
   return (
     <Button
       type="button"
-      onClick={() => {
+      aria-busy={false}
+      onClick={(event: React.MouseEvent<HTMLButtonElement> & { target: HTMLButtonElement }) => {
         const url = typeof fileurl === "string" ? fileurl : "";
         const name = typeof filename === "string" ? filename : "";
+        const thisButton = event.target;
 
         if (url === "" || name === "") {
           return;
         }
 
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = name;
-        a.target = "_blank";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        window.setTimeout(() => {
+          thisButton.setAttribute("aria-busy", "false");
+          thisButton = null;
+        }, 0);
 
+        thisButton.setAttribute("aria-busy", "true");
+        const aTag = document.createElement("a");
+        aTag.href = url;
+        aTag.download = name;
+        aTag.target = "_blank";
+        document.body.appendChild(aTag);
+        aTag.click();
+        document.body.removeChild(aTag);
+
+        aTag = null;
         window.dispatchEvent(new CustomEvent("download", {
           detail: url
-        })
+        });
       }}
       {...props}
       className={className}
@@ -53,7 +62,10 @@ import { Download } from "lucide-react";
   fileurl="https://x9Asjf40doUy6Trm8Lm30.object"
   className={"p-2 border-[#eef2ab] bg-gray-50 text-[#ffffff]"}
 >
-  <span><Download size={14} /> <strong data-light>Download</strong></span>
+  <span>
+    <Download size={14} />
+    <strong data-light>Download</strong>
+  </span>
 </DownloadFileButton>
 
 */
