@@ -52,6 +52,9 @@ export const useTextFileDownload = (textFileMimeType = "text/plain") => {
               : [textFileContent], { type: textFileMimeType })
           : new Blob(textFileContent, { type: textFileMimeType })
         window.navigator.msSaveBlob(blob, textFileName);
+        window.dispatchEvent(new CustomEvent("download", {
+          detail: URL.createObjectURL(blob)
+        });
       } else {
         const link = window.document.createElement("a");
         if (textFileContent instanceof Uint8Array) {
@@ -72,14 +75,14 @@ export const useTextFileDownload = (textFileMimeType = "text/plain") => {
             textFileName
         );
         link.click();
-      }
 
-      /* @TODO: Add Custom Event for 'download' */
-      /*
-        window.dispatchEvent(new CustomEvent("download", {
-          detail: url
-        });
-      */
+        /* @TODO: Add Custom Event for 'download' */
+        /*
+          window.dispatchEvent(new CustomEvent("download", {
+            detail: url
+          });
+        */
+      }
     }
   }
 };
@@ -92,12 +95,9 @@ export const useBinaryFileDownload = (binaryFileMimeType = "application/octet-st
         const saveBlob = (arrayBuffer) =>
           const blob = new Blob(arrayBuffer, { type: binaryFileMimeType })
           window.navigator.msSaveBlob(blob, binaryFileName);
-          /* @TODO: Add Custom Event for 'download' */
-          /*
-            window.dispatchEvent(new CustomEvent("download", {
-              detail: url
-            });
-          */
+          window.dispatchEvent(new CustomEvent("download", {
+            detail: URL.createObjectURL(blob)
+          });
         };
         if (binaryFileContent instanceof Uint8Array) {
           return saveBlob(binaryFileContent);
