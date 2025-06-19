@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 
-const Button: FC<React.ComponentProps<"button">> = ({
+const Button: FC<Omit<React.ComponentProps<"button">, "role">> = ({
   id,
   name,
   tabIndex = 0,
@@ -8,7 +8,7 @@ const Button: FC<React.ComponentProps<"button">> = ({
   ...props
 }) => {
   return (
-    <button id={id} name={name} tabIndex={tabIndex} {...props}>
+    <button id={id} name={name} role="button" tabIndex={tabIndex} {...props}>
       {children}
     </button>
   );
