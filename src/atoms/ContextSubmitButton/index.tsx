@@ -17,6 +17,7 @@ const ContextSubmitButton: FC<
       type={"submit"}
       disabled={(ignoreStatus ? false : !isValid) || isSubmitting || isLoading}
       data-busy={JSON.stringify(isSubmitting || isLoading)}
+      aria-busy={JSON.stringify(isSubmitting || isLoading)}
       className={className}
     >
       {children}
