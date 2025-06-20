@@ -11,8 +11,7 @@ export enum AvatarSizes {
 
 export interface AvatarProps extends React.ComponentPropsWithRef<"div"> {
   size?: AvatarSizes;
-  imageClassName?: string;
-  letterClassName?: string;
+  wrapperClassName?: string;
   src?: string;
   widgetSize?: number;
   letters?: string;
@@ -23,11 +22,10 @@ const Avatar: FC<AvatarProps> = ({
   size,
   src = defaultImagePath,
   className = "",
-  imageClassName = "",
-  letterClassName = "",
+  wrapperClassName = "",
   alt = "avatar",
   widgetSize = 40,
-  letters,
+  letters = "",
   ...props
 }: AvatarProps) => {
   useEffect(() => {  
@@ -155,10 +153,10 @@ const Avatar: FC<AvatarProps> = ({
   } as const;
 
   return (
-    <div className={`${className} avatar_wrapper-box`} {...props}>
-      {letters
+    <div {...props} className={`${wrapperClassName} avatar_wrapper-box`}>
+      {typeof letters === "string" && letters
         ? <span
-            className={`${letterClassName} avatar_letter-box`}
+            className={`${className} avatar_letter-box`}
             data-letter-size={size ? size : undefined}
             data-letter={letters}
             title={alt}
@@ -176,7 +174,7 @@ const Avatar: FC<AvatarProps> = ({
         : <img
             alt={alt}
             title={alt}
-            className={`${imageClassName} avatar_image-box`}
+            className={`${className} avatar_image-box`}
             src={src}
             data-image-size={size ? size : undefined}
             width={size ? sizeMap[size] : widgetSize}
@@ -202,6 +200,8 @@ export const AvatarWidget = {
     widgetSize={48}
     letters={"MN"}
     alt={"Minas Nerith"}
+    className={"..."}
+    wrapperClassName={"..."}
   />
 */
 
