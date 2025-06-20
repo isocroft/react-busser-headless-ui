@@ -43,7 +43,7 @@ function KeyShortcut ({
         position: relative;
       }
   
-      kbd[data-hotkeys="shortcut"] .modifierKeys {
+      kbd[data-hotkeys="shortcut"] kbd.modifierKeys {
         text-transform: capitalize;
       }
   
