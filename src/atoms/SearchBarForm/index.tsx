@@ -6,6 +6,27 @@ import Form  from "../../subatoms/Form";
 
 import type { FormProps } from "../../subatoms/Form";
 
+const hasChildren = (
+  children: React.ReactNode | React.ReactNode[],
+  count: number
+): boolean => {
+  if (!Boolean(children) && count === 0) {
+    return true;
+  }
+  const childCount = React.Children.count(children);
+  return childCount === count;
+};
+
+const isSubChild = <C extends React.ReactNode>(
+  child: C,
+  tag: string
+): child is C =>
+  React.isValidElement<C>(child) &&
+  (typeof child?.type === "function"
+    ? child?.type?.name === tag
+    : String(child?.type).includes(tag));
+
+
 function SearchBarForm({
   searchParamName = "filter",
   children,
