@@ -87,27 +87,19 @@ const FullScreenMediaBox = ({
   src,
   className,
   wrapperClassName = "",
-  onClick,
   ...props
-}: Omit<React.ComponentPropsWithRef<"section">, "onClick"> & {
-  type?: "image" | "video",
-  src: string,
-  width?: number,
-  height?: number,
-  autoPlay?: boolean,
-  alt?: string,
-  wrapperClassName?: string,
-  onClick?: ButtonProps["onClick"]
+}: React.ComponentPropsWithRef<"section"> & {
+  type?: "image" | "video";
+  src: string;
+  width?: number;
+  height?: number;
+  autoPlay?: boolean;
+  alt?: string;
+  wrapperClassName?: string;
 }) => {
   const btnElemRef = useRef<HTMLButtonElement | null>(null);
   const { ref: mediaElemRef, toggle, fullscreen } = useFullScreen();
   const onToggle = useCallback((event: React.MouseEvent<HTMLButtonElement> & { target: HTMLButtonElement }) => {
-    event.fullscreenTarget = mediaElemRef.current;
-
-    if (typeof onClick === "function") {
-      onClick(event);
-    }
-
     toggle();
   }, [fullscreen.toString(), toggle]);
 
@@ -118,6 +110,30 @@ const FullScreenMediaBox = ({
       }
     }]
   ], []);
+
+  useEffect(() => {
+    const onMediaFullscreen = () => {
+      if (btnElemRef.current) {
+        btnElemRef.current.click();
+      }
+    };
+
+    if (btnElemRef.current) {
+      /* @ts-ignore */
+      btnElemRef.current.parentNode!.addEventListener("mediafullscreen", onMediaFullscreen, false);
+    }
+
+    return () => {
+      if (btnElemRef.current) {
+        /* @ts-ignore */
+        btnElemRef.current.parentNode!.removeEventListener(
+          "mediafullscreen",
+          onMediaFullscreen,
+          false
+        );
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
@@ -153,6 +169,7 @@ const FullScreenMediaBox = ({
         width: 0;
         height: 0;
         font-size: 0;
+        padding: 0;
         opacity: 0;
         visibility: hidden;
       }
@@ -189,8 +206,7 @@ const FullScreenMediaBox = ({
         height={height}
         data-fullscreen-mode={fullscreen ? "true" : "false"}
         className={className}
-        autoPlay={autoPlay ? "true" : undefined}
-        alt={alt}
+        autoPlay={autoPlay ? true : undefined}
       ></video>
     );
   };
@@ -233,12 +249,15 @@ const FullScreenMediaBox = ({
   height={210}
   className={"..."}
   wrapperClassName={"..."}
+  onClick={(event) => {
+    event.currentTarget.dispatchEvent(new Event("mediafullscreen", { bubbles: false }));
+  }}
 >
   <KeyShortcut
-    modifier="ctrl"
+    modifier="mod"
     symbol="q"
   >
-    <KeyShortcut.Description text="" />
+    <KeyShortcut.Summary text="trigger fullscreen" />
   </KeyShortcut>
 </FullScreenMediaBox>
 */
