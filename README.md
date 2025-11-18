@@ -7,7 +7,7 @@ A progressive, unstyled, accessible, atomic, highly reusable, flexible and confi
 
 _We all deserve a UI library that allows us to ship minimal CSS to devices, demands minimal boilerplate to create simple and complex components, deploys flexible theming options and doesn't lock us into a particular CSS framework (e.g. **Tailwind**, **Bulma**, **Bootstrap**)._
 
-_Finally, a UI library that ties UI components to routers (e.g. app/page **NextJS_Router**, **Tanstack_Router**, **React_Router**) to ensure more cohesive functionality and behavior especially for components like **<Tabs/>** and **<Modals/>**._
+_Finally, a UI library that ties UI components to routers (e.g. app/page **NextJS_Router**, **Tanstack_Router**, **React_Router**) to ensure more cohesive functionality and behavior especially for components like **&lt;Tabs&sol;&gt;** and **&lt;Modals&sol;&gt;**._
 
 Therefore, **react-busser-headless-ui**:
 
