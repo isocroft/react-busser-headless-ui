@@ -1,21 +1,29 @@
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-# react-busser-headless-ui (WIP)
-A progressive, atomic, highly reusable, flexible and configurable headless UI component library for ReactJS.
+# react-busser-headless-ui
+A progressive, unstyled, accessible, atomic, highly reusable, flexible and configurable headless UI component library for ReactJS.
 
 >**HIGHLIGHTS**
 
-- Ships with zero styles (Paint on a blank canvas - no colors, background-colors or shadows except the ones you define)
-- Uses modern [HTML](https://en.wikipedia.org/wiki/HTML5) tags for component structure where necessary (e.g. **details**, **summary**, **dialog** and **menu**)
-- Minimizes the use of `useState()` especially for things [CSS](https://en.wikipedia.org/wiki/CSS3_(disambiguation)#:~:text=CSS3%20is%20an%20abbreviation%20for,stylesheet%20language%20for%20structured%20documents.) can already handle. (e.g. toggling the visibility of a DOM node or capturing invalid state)
+_We all deserve a UI library that allows us to ship minimal CSS to devices, demands minimal boilerplate to create simple and complex components, deploys flexible theming options and doesn't lock us into a particular CSS framework (e.g. **Tailwind**, **Bulma**, **Bootstrap**)._
+
+_Finally, a UI library that ties UI components to routers (e.g. app/page **NextJS_Router**, **Tanstack_Router**, **React_Router**) to ensure more cohesive functionality and behavior especially for components like **<Tabs/>** and **<Modals/>**._
+
+Therefore, **react-busser-headless-ui**:
+
+- Ships with zero styles (Paint on a blank canvas - no colors and no shadows except the ones you define)
+- Uses modern [HTML](https://en.wikipedia.org/wiki/HTML5) tags for component structure where necessary (e.g. **&lt;details&gt;**, **&lt;summary&gt;**, **&lt;dialog&gt;** and **&lt;menu&gt;**)
+- Minimizes the use of `useState(...)` especially for things [CSS](https://en.wikipedia.org/wiki/CSS3_(disambiguation)#:~:text=CSS3%20is%20an%20abbreviation%20for,stylesheet%20language%20for%20structured%20documents.) can already handle. (e.g. toggling the visibility of a DOM node or capturing invalid state)
 - Reduces boilerplate associated with setting up a component especially around structure, testability and reusability.
-- makes use of the very  best third-party libraries to handle forms, toasts, utilities and state management (i.e. [react-hook-form](https://react-hook-form.com/docs), [react-busser](https://github.com/codesplinta/busser/blob/main/README.md), [react-day-picker](https://daypicker.dev/), [react-dropzone](https://react-dropzone.js.org/#src) & [sonner](https://sonner.emilkowal.ski/getting-started)
+- Also, makes use of the very best third-party libraries to handle forms, toasts, utilities and state management (i.e. [**react-hook-form**](https://react-hook-form.com/docs), [**react-busser**](https://github.com/codesplinta/busser/blob/main/README.md), [**react-day-picker**](https://daypicker.dev/), [**react-dropzone**](https://react-dropzone.js.org/#src) & [**sonner**](https://sonner.emilkowal.ski/getting-started)
 
 ![components-init](./components-init.png)
 ![component-next-init](./component-next-init.png)
 ![component-showcase](./component-showcase.png)
 ![component-next-showcase](./component-next-showcase.png)
 ![component-last-showcase](./component-last-showcase.png)
+<img width="658" height="826" alt="Screenshot 2025-11-18 at 6 03 08 PM" src="https://github.com/user-attachments/assets/5aa44a45-c2aa-4c3c-856e-bb192a6393a1" />
+
 
 ## Preamble
 
