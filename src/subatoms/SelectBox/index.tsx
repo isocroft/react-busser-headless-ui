@@ -1,7 +1,12 @@
 import React, { useRef, useCallback, useMemo, useEffect } from "react";
-import { useEffectMemo } from "react-busser";
+//import { useEffectMemo } from "react-busser";
 
 import type { Ref, ComponentPropsWithRef, ComponentProps } from "react";
+
+type EffectMemoCallbackArgs<DepsType = unknown[]> = {
+  dependencies: DepsType;
+  changed: Partial<DepsType> | [];
+};
 
 import { ChevronIcon } from "./assets/ChevronIcon";
 
@@ -14,6 +19,51 @@ const hasChildren = (
   }
   const childCount = React.Children.count(children);
   return childCount === count;
+};
+
+export const useEffectMemo = <Z extends Array<unknown>, V = unknown>(
+  callback: (options: EffectMemoCallbackArgs<Z>) => V,
+  deps: Z
+) => {
+  const safeDeps = (Array.isArray(deps) ? deps : []) as Z;
+  const memoRef = useRef<ReturnType<typeof callback> | null>(
+    typeof callback === "function"
+      ? callback({ dependencies: safeDeps, changed: [] })
+      : null
+  );
+
+  const depsRef = useRef<string[]>(
+    safeDeps.map((dep) =>
+      typeof dep === "object" ? JSON.stringify(dep) : String(dep || "")
+    )
+  );
+
+  useEffect(() => {
+    const depsIndexMap: Record<number, Z[number]> = {};
+    const newlyChangedDeps = safeDeps.filter((dep, index) => {
+      const status = dep !== depsRef.current[index];
+      if (status) {
+        depsIndexMap[index] = dep;
+      }
+      return status;
+    }) as Partial<Z>;
+
+    if (newlyChangedDeps.length > 0) {
+      depsRef.current = safeDeps.map((dep, index) => {
+        if (depsIndexMap[index]) {
+          return String(depsIndexMap[index] || "");
+        }
+        return String(dep || "");
+      });
+
+      memoRef.current =
+        typeof callback === "function"
+          ? callback({ dependencies: safeDeps, changed: newlyChangedDeps })
+          : null;
+    }
+  });
+
+  return useMemo<ReturnType<typeof callback> | null>(() => memoRef.current, []);
 };
 
 const SBox = React.forwardRef(
@@ -427,3 +477,21 @@ type SelectBoxProps = React.ComponentProps<typeof SelectBox>;
 export type { SelectBoxProps };
 
 export default SelectBox;
+
+
+/*
+        <SelectBox
+          name={"sorter"}
+          valueSync
+          chevronSize={17}
+          chevronOpacity={0.76}
+          wrapperClassName={"selectbox"}
+          widthFillAvailable
+          className={"dropdown"}
+          placeholder="Select Sort Order"
+          defaultValue={"ASC"}
+        >
+          <SelectBox.Option value="ASC">ASC</SelectBox.Option>
+          <SelectBox.Option value="DESC">DESC</SelectBox.Option>
+        </SelectBox>  
+*/
