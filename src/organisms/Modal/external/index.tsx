@@ -17,7 +17,7 @@ import Modal from "../";
 type ModalControls = {
   show: (
     node: React.ReactNode,
-    reference: React.MutableRefObject<HTMLDivElement | null>,
+    reference: React.MutableRefObject<(HTMLDivElement & HTMLDialogElement) | null>,
     callback: () => void
   ) => string;
   close: (modalId: string) => void;
@@ -43,11 +43,11 @@ function useModalCore(styles: {
   const [modals, setModals] = useState<React.ReactElement[]>([]);
   const controls = useMemo(() => {
     const idGeneratorRoutine = sequentialIdGeneratorFactory();
-    const close = (modalRefId: string) => {
+    const close = (modalRefId: string, callback?: () => void) => {
       let id = modalRefId;
 
       if (typeof HTMLDialogElement == "function") {
-        const { position, ref } = markModalsPosition.current[id];
+        const { ref } = markModalsPosition.current[id];
 
         delete markModalsPosition.current[id];
   
@@ -74,11 +74,15 @@ function useModalCore(styles: {
           return clonedPrevModals;
         });
       }
+
+      if (typeof callback === "function") {
+        callback();
+      }
     };
 
     return {
       show(
-        node: React.ReactElement,
+        node: React.ReactNode,
         reference: React.MutableRefObject<(HTMLDivElement & HTMLDialogElement) | null>,
         callback: () => void
       ) {
@@ -94,8 +98,7 @@ function useModalCore(styles: {
             className={styles.className}
             wrapperClassName={styles.wrapperClassName}
             id={id}
-            close={close.bind(null, id)}
-            onClose={callback}
+            close={close.bind(null, id, callback)}
             ref={reference}
           >
             {node}
@@ -145,10 +148,10 @@ const useModalControls = (
     describedBy: string;
   }
 ) => {
-  const modalNode = useRef<React.ReactElement | null>(null);
+  const modalNode = useRef<React.ReactElement<{ id?: string }> | null>(null);
   const [modalVisibilityState, setModalVisibilityState, unsetParamsOnUrl] =
     useSearchParamsState<"hidden" | "visible">(id, false, "hidden");
-  const [modalRef] = useOutsideClick<HTMLDivElement>((subject) => {
+  const [modalRef] = useOutsideClick<HTMLDivElement & HTMLDialogElement>((subject) => {
     setModalVisibilityState((prevModalVisibilityState) => {
       if (prevModalVisibilityState === "visible") {
         return "hidden";
@@ -156,7 +159,7 @@ const useModalControls = (
       return prevModalVisibilityState;
     });
     /* @NOTE: Close the modal if any DOM element outside it is clicked */
-    if (subject !== null) {
+    if (subject) {
       controls.close(subject.id);
     }
   });
@@ -206,8 +209,8 @@ const useModalControls = (
     }
   } else {
     if (modalRef.current !== null) {
-      controls.close(id || modalRef.current.id);
       setModalVisibilityState("hidden");
+      controls.close(id || modalRef.current.id);
     }
   }
 
@@ -215,7 +218,7 @@ const useModalControls = (
     get isModalVisible() {
       return modalVisibilityState === "visible";
     },
-    showModal(node: React.ReactElement) {
+    showModal(node: React.ReactNode) {
       if (
         hasChildren(node, 0) ||
         !React.isValidElement<{ id?: string }>(node)
@@ -247,8 +250,8 @@ const useModalControls = (
     },
     closeModal($id?: string) {
       if (modalRef.current) {
-        controls.close($id || modalRef.current.id);
         setModalVisibilityState("hidden");
+        controls.close($id || modalRef.current.id);
         modalRef.current = null;
       }
     },
@@ -288,12 +291,10 @@ export const useModal = (
     !controls
       ? {
           show() {
-            console.error("unable to fulfill `show()` call for [useModal()]");
-            return "";
+            throw new Error("unable to fulfill `show()` call for `useModal()` hook");
           },
           close() {
-            console.error("unable to fulfill `close()` call for [useModal()]");
-            return undefined;
+            throw new Error("unable to fulfill `close()` call for `useModal()` hook");
           },
         }
       : controls,
