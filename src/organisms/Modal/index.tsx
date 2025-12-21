@@ -1,7 +1,8 @@
-import React, { FC } from "react";
+import React, { useEffect } from "react";
 import ReactDOM from "react-dom";
-
 import { useLockBodyScroll } from "react-busser";
+
+import type { FC } from "react";
 
 const hasChildren = (
   children: React.ReactNode | React.ReactNode[],
@@ -177,7 +178,7 @@ const Modal = Object.assign(
     (HTMLDivElement & HTMLDialogElement),
     React.HTMLAttributes<(HTMLDivElement & HTMLDialogElement)> & {
       wrapperClassName?: string;
-      onClose: () => void;
+      onClose?: () => void;
       close: () => void;
     }
   >(function Modal(props, ref) {
@@ -196,7 +197,9 @@ const Modal = Object.assign(
     useEffect(() => {
       return () => {
         if (typeof window.HTMLDialogElement !== 'function') {
-          onClose();
+          if (typeof onClose === "function") {
+            onClose();
+          }
         }
       };
     }, []);
