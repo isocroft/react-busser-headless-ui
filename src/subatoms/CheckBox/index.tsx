@@ -112,17 +112,9 @@ const CheckBox: FC<
           z-index: 10;
         }
   
-        /*.check_hidden-input + svg circle {
-          opacity: 0;
-        }*/
-  
         .check_hidden-input:not(:checked) + svg path {
           stroke: transparent;
         }
-  
-        /*.check_hidden-input:checked + svg path {
-          stroke: #ffffff;
-        }*/
   
         .check_control-icon-box {
           min-height: 0;
@@ -157,9 +149,7 @@ const CheckBox: FC<
               className={"check_hidden-input"}
               ref={ref}
             />
-            {typeof checkIconSize === "number" ? (
-              <MarkIcon size={checkIconSize} iconFill={checkIconFillColor} />
-            ) : null}
+            <MarkIcon size={checkIconSize} iconFill={checkIconFillColor} />
           </span>
           {hasChildren(children, 0) ? null : (
             <label htmlFor={id} className={labelClassName}>
