@@ -63,7 +63,7 @@ export const useEffectMemo = <Z extends Array<unknown>, V = unknown>(
     }
   });
 
-  return useMemo<ReturnType<typeof callback> | null>(() => memoRef.current, []);
+  return useMemo<ReturnType<typeof callback> | null>(() => memoRef.current, []) as ReturnType<typeof callback>;
 };
 
 const SBox = React.forwardRef(
@@ -120,7 +120,7 @@ const SBox = React.forwardRef(
     }, []);
 
     useEffect(() => {
-      if (!valueSync || selectRef.current === null || anyValue === "") {
+      if (!valueSync || selectRef.current === null /*|| anyValue === ""*/) {
         return;
       }
       /* @NOTE: Programmatically trigger a `change` event on a <select> tag */
@@ -160,7 +160,7 @@ const SBox = React.forwardRef(
         const spanElem = selectElem.parentNode! as HTMLSpanElement;
         const selectOptions = Array.from(selectElem.options);
         const selectedIndex =
-          selectElem.selectedIndex >= 0
+          selectElem.selectedIndex >= 0 && anyValue !== ""
             ? selectElem.selectedIndex
             : selectOptions.findIndex((option) => {
                 return (
