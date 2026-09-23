@@ -218,6 +218,16 @@ export function getId(prefix: string, key: React.Key): string {
 
 const useOriginId = getUseId();
 
+/**
+ * useGenericId:
+ *
+ * Returns a serially generated id in any environment
+ * that remains the same across renders an is SSR-safe
+ *
+ * @param {=String} id
+ *
+ * @returns {String}
+ */
 export const useGenericId = useOriginId
   ? // @HINT: Use React `useId`
     function (id?: string) {
