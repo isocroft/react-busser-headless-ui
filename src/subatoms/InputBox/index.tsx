@@ -14,7 +14,7 @@ const InputBox = React.forwardRef(
     const anyValue = (defaultValue ? defaultValue : props.value) as string;
     const inputBoxRef = useRef<HTMLInputElement | null>(null);
     useEffect(() => {
-      if (!valueSync || inputBoxRef.current === null || anyValue === "") {
+      if (!valueSync || inputBoxRef.current === null || !anyValue) {
         return;
       }
       /* @NOTE: Programmatically trigger a `change` event on a <input> tag */
