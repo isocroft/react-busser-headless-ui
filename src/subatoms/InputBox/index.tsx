@@ -1,4 +1,5 @@
-import React, { Ref, useRef, useCallback, useEffect } from "react";
+import React, { useRef, useCallback, useEffect } from "react";
+import type { Ref } from "react";
 
 const InputBox = React.forwardRef(
   (
