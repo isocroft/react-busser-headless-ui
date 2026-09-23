@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import InputBox from "../subatoms/InputBox";
+import InputBox from "../../subatoms/InputBox";
 
 import type { FC } from "react";
-import type { InputBoxProps } from "../subatoms/InputBox";
+import type { InputBoxProps } from "../../subatoms/InputBox";
+
+import { hasChildren, isSubChild } from "../../_shared/helpers";
 
 interface CompositionEvent<T = Element>
   extends React.SyntheticEvent<T, CompositionEvent> {
@@ -33,26 +35,6 @@ type CustomElementTagProps<T extends React.ElementType> =
   React.ComponentPropsWithRef<T> & {
     as?: T;
   };
-
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
-
-const isSubChild = <C extends React.ReactNode>(
-  child: C,
-  tag: string
-): child is C =>
-  React.isValidElement<C>(child) &&
-  (typeof child?.type === "function"
-    ? child?.type?.name === tag
-    : String(child?.type).includes(tag));
 
 function ClonedFormInputElements({
   as: Component = "div",
@@ -114,7 +96,7 @@ function ClonedFormInputElements({
   const dValue = useRef<string>("").current;
 
   const clonedElements = Array.from({ length: count }).map((_, index) => {
-    if (React.isValidElement(firstChild)) {
+    if (React.isValidElement<InputBoxProps>(firstChild)) {
       return React.cloneElement<InputBoxProps>(firstChild, {
         valueSync: true,
         ...elementProps,
@@ -504,8 +486,8 @@ const CodeEntryBox = ({
       onPasteCapture={handlePasteCapture}
       data-codeentrybox-root={"yes"}
     >
-      {/* Screen readers will announce this legend first */}
-      <legend>{props.title}</legend>
+      {/* Screen readers will announce this first */}
+      <legend className={"sr-only"}>{props.title}</legend>
       <input
         type={"text"}
         name={name}
@@ -551,7 +533,7 @@ export default CodeEntryBox;
   slots={6}
   title={"OTP"}
   onChange={(event) => {
-    console.log("haha! ", event.target.value);
+    console.log("hello! ", event.target.value);
   }}
 >
   <CodeEntryBox.Input />
