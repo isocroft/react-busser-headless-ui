@@ -3,31 +3,14 @@ import { useOutsideClick, useIsFirstRender } from "react-busser";
 import { DayPicker, DateRange } from "react-day-picker";
 import { format, isValid, parse } from "date-fns";
 
-import TextBox from "../../subatoms/TextBox";
 import Button from "../../subatoms/Button";
+import TextBox from "../../subatoms/TextBox";
+import PopoverBox from "../../atoms/PopoverBox";
 
-import { TextBoxProps } from "../../subatoms/TextBox";
-import { ButtonProps } from "../../subatoms/Button";
+import type { TextBoxProps } from "../../subatoms/TextBox";
+import type { ButtonProps } from "../../subatoms/Button";
 
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
-
-const isSubChild = <C extends React.ReactNode>(
-  child: C,
-  tag: string
-): child is C =>
-  React.isValidElement<C>(child) &&
-  (typeof child?.type === "function"
-    ? child?.type?.name === tag
-    : String(child?.type).includes(tag));
+import { hasChildren, isSubChild } from "../../_shared/helpers";
 
 const SingleDateInput = ({
   onChange,
@@ -196,7 +179,7 @@ const CalendarBox = ({
   classNames = {},
   required,
   ...props
-}: React.ComponentProps<"section"> &
+}: React.ComponentPropsWithoutRef<"section"> &
   Pick<React.ComponentProps<"input">, "tabIndex"> & {
     dateFormat?: "mm/dd/yyyy" | "dd/mm/yy";
     reverseMonths?: boolean;
@@ -211,7 +194,7 @@ const CalendarBox = ({
     classNames?: Record<string, string>;
     wrapperClassName?: string;
   }) => {
-  const pickerBoxRef = useRef<HTMLDivElement | null>(null);
+  const popoverBoxRef = useRef<HTMLElement | null>(null);
 
   /* @HINT: Hold the month in state to control the calendar when the input changes */
   const [month, setMonth] = useState<Date>(() => {
@@ -237,119 +220,8 @@ const CalendarBox = ({
   // });
 
   useEffect(() => {
-    const styleSheetsOnly = [].slice
-      .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-      .filter((sheet) => {
-        if (sheet.ownerNode) {
-          return sheet.ownerNode.nodeName === "STYLE";
-        }
-        return false;
-      })
-      .map((sheet) => {
-        if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-          return sheet.ownerNode.id;
-        }
-        return "";
-      })
-      .filter((id) => id !== "");
-
-    if (
-      styleSheetsOnly.length > 0 &&
-      /* @ts-ignore */
-      styleSheetsOnly.includes("react-busser-headless-ui_calendar")
-    ) {
-      return;
-    }
-
-    const calendarStyle = window.document.createElement("style");
-    calendarStyle.id = "react-busser-headless-ui_calendar";
-
-    calendarStyle.innerHTML = `
-      
-      .calendar_wrapper-box {
-        position: relative;
-        display: inline-block; /* shrink-to-fit trigger */
-        min-height: 0;
-        min-width: fit-content;
-      }
-
-      .calendar_picker-box {
-        position: absolute;
-        display: none;
-      }
-
-      .calendar_picker-box[data-vertical-position-anchor="top"] {
-        bottom: auto;
-        top: 100%;
-      }
-
-      .calendar_picker-box[data-vertical-position-anchor="bottom"] {
-        top: auto;
-        bottom: 100%;
-      }
-
-      .calendar_picker-box[data-horizontal-position-anchor="left"] {
-        right: auto;
-        left: 0;
-      }
-
-      .calendar_picker-box[data-horizontal-position-anchor="right"] {
-        left: auto;
-        right: 0;
-      }
-
-      .calendar_wrapper-box > .calendar_picker-box.show {
-        display: block;
-      }
-    `;
-    window.document.head.appendChild(calendarStyle);
-
-    return () => {
-      window.document.head.removeChild(calendarStyle);
-    };
-  }, []);
-
-  useEffect(() => {
-    const onResize = () => {
-      if (pickerBoxRef.current !== null) {
-        const wrapper = pickerBoxRef.current.parentNode as HTMLElement | null;
-        if (wrapper !== null) {
-          const { left, right, bottom, width } =
-            wrapper.getBoundingClientRect();
-          const viewportWidth = window.innerWidth;
-          const viewportHeight = window.innerHeight;
-          const elementWidth = width || right - left;
-          const elementHeight = parseInt(
-            window.getComputedStyle(pickerBoxRef.current)["height"]
-          );
-
-          if (viewportWidth - right <= elementWidth) {
-            pickerBoxRef.current.dataset.horizontalPositionAnchor = "right";
-          } else {
-            pickerBoxRef.current.dataset.horizontalPositionAnchor = "left";
-          }
-
-          if (viewportHeight - bottom <= elementHeight) {
-            pickerBoxRef.current.dataset.verticalPositionAnchor = "bottom";
-          } else {
-            pickerBoxRef.current.dataset.verticalPositionAnchor = "top";
-          }
-        }
-      }
-    };
-
-    window.addEventListener("resize", onResize, false);
-
-    onResize();
-
-    return () => {
-      window.removeEventListener("resize", onResize, false);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (pickerBoxRef.current !== null) {
-      const wrapper = pickerBoxRef.current.parentNode as HTMLElement | null;
+    if (popoverBoxRef.current !== null) {
+      const wrapper = popoverBoxRef.current;
       if (wrapper !== null) {
         const dateInput = wrapper.querySelector("input[data-calendar-value]")!;
         if (dateInput !== null) {
@@ -373,20 +245,6 @@ const CalendarBox = ({
       }
     }
   }, []);
-
-  const [wrapperRef] = useOutsideClick<HTMLDivElement>((wrapper) => {
-    if (wrapper) {
-      const pickerBox = wrapper.querySelector(
-        "div[data-horizontal-position-anchor]"
-      ) as HTMLElement | null;
-
-      if (pickerBox !== null) {
-        if (pickerBox.classList.contains("show")) {
-          pickerBox.classList.remove("show");
-        }
-      }
-    }
-  });
 
   const onInputCheckNonDigitsAndDelimiter = (
     event: React.KeyboardEvent<HTMLInputElement> & { target: HTMLInputElement }
@@ -421,19 +279,17 @@ const CalendarBox = ({
     }
   ) => {
     //const calendarRoot = event.currentTarget.firstElementChild;
-    const calendarNav = event.currentTarget.getElementsByTagName("nav")[0];
-    const parentElement = event.target.parentNode as HTMLElement | null;
-    if (parentElement !== null) {
-      if (
-        calendarNav.contains(event.target) ||
-        calendarNav.contains(parentElement) ||
-        event.target.tagName === "SELECT" ||
-        parentElement.tagName === "SELECT"
-      ) {
-        event.detail = -1;
-        if (!event.isDefaultPrevented()) {
-          event.preventDefault();
-          return;
+    const calendarTable = event.currentTarget.getElementsByTagName("table")[0];
+    let calendarTableHead: HTMLElement | null;
+    if (calendarTable !== null) {
+      calendarTableHead = calendarTable.getElementsByTagName("thead")[0];
+      if (calendarTableHead !== null) {
+        if (
+          (!calendarTable.contains(event.target) ||
+            calendarTableHead.contains(event.target)) &&
+          event.target.tagName !== "BUTTON"
+        ) {
+          //event.stopPropagation();
         }
       }
     }
@@ -550,55 +406,17 @@ const CalendarBox = ({
   const [onlyChild] = React.Children.toArray(children);
 
   return (
-    <section
+    <PopoverBox
       {...props}
-      aria-label={"calendar box wrapper"}
+      aria-label={"calendar-box-wrapper"}
       tabIndex={tabIndex}
-      className={`calendar_wrapper-box ${wrapperClassName}`}
-      onPointerUp={(
-        event: React.PointerEvent<HTMLDivElement> & {
-          target: HTMLElement;
-          currenTarget: HTMLElement;
-        }
-      ) => {
-        if (!event.defaultPrevented && event.detail === 0) {
-          if (
-            pickerBoxRef.current !== null &&
-            pickerBoxRef.current.contains(event.target)
-          ) {
-            pickerBoxRef.current.classList.remove("show");
-          }
-        }
-      }}
-      onFocus={(
-        event: React.FocusEvent<HTMLElement> & { target: HTMLElement }
-      ) => {
-        const wrapper = event.target;
-        if (wrapper !== null) {
-          const dateInput = wrapper.querySelector(
-            "input[data-calendar-value]"
-          )! as HTMLInputElement | null;
-          if (dateInput !== null) {
-            dateInput.focus();
-          }
-        }
-
-        if (!event.defaultPrevented) {
-          if (
-            pickerBoxRef.current !== null &&
-            !pickerBoxRef.current.contains(event.target)
-          ) {
-            pickerBoxRef.current.classList.add("show");
-          }
-        }
-      }}
-      role={"group"}
-      ref={wrapperRef}
+      className={wrapperClassName ? wrapperClassName : undefined}
+      ref={popoverBoxRef}
       /* @CHECK: https://www.greatfrontend.com/questions/quiz/describe-event-capturing */
       onKeyDownCapture={onInputCheckNonDigitsAndDelimiter}
     >
-      <div
-        className={`calendar_input-box ${className}`}
+      <PopoverBox.Trigger
+        className={className ? className : undefined}
         onChange={onChange}
         onFocus={onFocus}
         onKeyUp={onInput}
@@ -608,14 +426,8 @@ const CalendarBox = ({
           isSubChild(onlyChild, "SingleDateButton"))
           ? children
           : null}
-      </div>
-      <div
-        className={"calendar_picker-box"}
-        data-horizontal-position-anchor={"left"}
-        data-vertical-position-anchor={"top"}
-        ref={pickerBoxRef}
-        onPointerUp={onPointerUp}
-      >
+      </PopoverBox.Trigger>
+      <PopoverBox.Content onPointerUp={onPointerUp}>
         <DayPicker
           mode={mode === "single" ? (mode as "single") : (mode as "multiple")}
           captionLayout={captionLayout}
@@ -642,8 +454,8 @@ const CalendarBox = ({
               : handleMultipleDayPickerSelect
           }
         />
-      </div>
-    </section>
+      </PopoverBox.Content>
+    </PopoverBox>
   );
 };
 
@@ -655,3 +467,33 @@ type CalendarBoxProps = React.ComponentProps<typeof CalendarBox>;
 export type { CalendarBoxProps };
 
 export default CalendarBox;
+
+/*
+
+@EXAMPLE: 
+
+import { getDefaultClassNames } from "react-day-picker";
+
+const defaultClassNames = getDefaultClassNames();
+
+const [inputValue, setInputValue] = useState("02/12/2024");
+
+<CalendarBox
+ className=""
+ dateFormat="mm/dd/yyyy"
+ wrapperClassName=""
+ classNames={{
+   root: `${defaultClassNames.root} shadow-lg p-5`,
+   chevron: `${defaultClassNames.chevron} fill-amber-500`
+ }}
+>
+  <CalendarBox.SingleDateInput
+    className=""
+    value={inputValue}
+    onChange={(e) => setInputValue(e.target.value)}
+  >
+    <span>Label:</span> 
+  </CalendarBox.SingleDateInput>
+</CalendarBox>
+
+*/
