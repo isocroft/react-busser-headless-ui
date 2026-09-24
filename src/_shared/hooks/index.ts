@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useSearchParams } from "react-router-dom";
-import { useEffectCallback } from "react-busser";
+import { useEffectCallback, useBeforePageUnload } from "react-busser";
 
 import type { MutableRefObject } from "react";
 import type { CurrentPageTriggerDetail } from "../helpers";
@@ -167,6 +167,50 @@ export const usePageSearchParam = (
     rawPageIndex,
     writePageIndexToURL,
   } as const;
+};
+
+/**
+ * useRouteChanged:
+ *
+ *
+ *
+ *
+ * @param {Function} callback -
+ *
+ * @returns {void}
+ */
+
+/* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
+export function useRouteChanged(callback = (() => undefined) as Function) {
+  const stableCallback = useEffectCallback(() => callback(), {
+    immutableRef: true,
+  });
+
+  useEffect(() => {
+    function onHistoryEntryModified() {
+      stableCallback();
+    }
+
+    window.addEventListener("popstate", onHistoryEntryModified, false);
+
+    return () => {
+      window.removeEventListener("popstate", onHistoryEntryModified, false);
+    };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+  }, []);
+
+  useBeforePageUnload(
+    () => {
+      window.setTimeout(() => {
+        stableCallback();
+      }, 0);
+    },
+    {
+      when: true,
+      message: "",
+      extraWatchProperty: "",
+    }
+  );
 };
 
 function getUseId() {
