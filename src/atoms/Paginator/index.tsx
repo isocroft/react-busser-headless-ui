@@ -2,13 +2,13 @@ import React, { useState, useRef, useCallback, useContext, useEffect } from "rea
 import { NavLink, useLocation } from "react-router-dom"; /* versions: v5.x, v6.x, v7.x */
 
 import type { Ref, /* RefObject,*/ MutableRefObject } from "react";
-import type { CurrentPageTriggerDetail, PaginatorRenderProps } from "../../shared/helpers";
+import type { CurrentPageTriggerDetail, PaginatorRenderProps } from "../../_shared/helpers";
 
 import Button from "../../subatoms/Button";
 
 import { sprintf, hasRenderableChildren, PAGINATOR_EVENTS } from "../../_shared/helpers";
 
-/* 
+/*
   @INFO:
 
   Modifier clicks and non-primary buttons are left to the browser so
@@ -672,30 +672,31 @@ const { props: paginatorProps } = useRenderScopedPaginatorProps({
   });
   
   <Table>
-    <thead>
+    <Table.Caption>Team Members</Table.Caption>
+    <Table.Heading>
       {table.getHeaderGroups().map((headerGroup) => (
-        <tr key={headerGroup.id}>
+        <Table.Row key={headerGroup.id}>
           {headerGroup.headers.map((header) => (
-            <th key={header.id}>
+            <Table.TitleRow rowItem={"th"} key={header.id}>
               {header.isPlaceholder
                 ? null
                 : flexRender(header.column.columnDef.header, header.getContext())}
-            </th>
+            </Table.TitleRow>
           ))}
-        </tr>
+        </Table.Row>
       ))}
-    </thead>
-    <tbody>
+    </Table.Heading>
+    <Table.Content>
       {table.getRowModel().rows.map((row) => (
-        <tr key={row.id}>
+        <Table.Row key={row.id}>
           {row.getVisibleCells().map((cell) => (
-            <td key={cell.id}>
+            <Table.ContentRow rowItem={MyRowItem} key={cell.id}>
               {flexRender(cell.column.columnDef.cell, cell.getContext())}
-            </td>
+            </Table.ContentRow>
           ))}
-        </tr>
+        </Table.Row>
       ))}
-    </tbody>
+    </Table.Content>
   </Table>
   
   <Paginator className={""} {...paginatorProps}>
