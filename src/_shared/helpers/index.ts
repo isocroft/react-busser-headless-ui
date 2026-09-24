@@ -1,6 +1,86 @@
 import React from "react";
 import type { MutableRefObject } from "react";
 
+/* Shadows the global so the file type-checks without package: `@types/node`. */
+declare const process: {
+  env: {
+    NODE_ENV?: string;
+    [key: string]: string | undefined;
+  };
+};
+
+const isCreateReactApp_Context = ({ noStrictEnvCheck = false }) => {
+  const hasCRAEnvVarPrefix = (noStrictCheck = false) =>
+    Boolean(
+      noStrictCheck ||
+        (!("env" in import.meta) &&
+          Object.keys(process.env).filter((envKey) =>
+            envKey.startsWith("REACT_APP_")
+          ).length)
+    );
+  /* @NOTE: Create-React-App is deprecated and out-of-commision however, it may still be necessary to check envs for its' usage */
+  /* @NOTE: Also, Create-React-App does support and recognize `import.meta` */
+  /* @CHECK: https://www.reddit.com/r/reactjs/comments/1e0wye1/conditionally_use_processenv_or_importmetaenv/ */
+  return (
+    Boolean(import.meta) &&
+    process &&
+    "env" in process &&
+    Boolean(process.env.NODE_ENV) &&
+    hasCRAEnvVarPrefix(noStrictEnvCheck)
+  );
+};
+
+const isViteApp_Context = () => {
+  const hasViteEnvVarPrefix = () =>
+    Boolean(
+      Object.keys(import.meta.env).filter((envKey) =>
+        envKey.startsWith("VITE_")
+      ).length
+    );
+  /* @NOTE: Ensuring that Vite is properly setup with well-prefixed env vars */
+  /* @CHECK: https://www.reddit.com/r/reactjs/comments/1e0wye1/conditionally_use_processenv_or_importmetaenv/ */
+  return (
+    Boolean(import.meta) &&
+    "env" in import.meta &&
+    Boolean(import.meta.env.MODE) &&
+    hasViteEnvVarPrefix()
+  );
+};
+
+const isJestEnv_Capable = ({ noStrictEnvCheck = true }) => {
+  const hasJestGlobalDefined =
+    "jest" in global &&
+    typeof global["jest"] !== "undefined" &&
+    global["jest"] !== null;
+  const hasJestExpectDefined =
+    "expect" in global &&
+    typeof global["expect"] !== "undefined" &&
+    global["expect"] !== null;
+
+  return (
+    isCreateReactApp_Context({ noStrictEnvCheck }) &&
+    process.env.NODE_ENV === "test" &&
+    hasJestExpectDefined &&
+    hasJestGlobalDefined
+  );
+};
+
+const isVitestEnv_Capable = () => {
+  return (
+    (isViteApp_Context() || (process && "env" in process)) &&
+    (process.env.VITEST || import.meta.env.VITEST)
+  );
+};
+
+export const IS_TEST_ENV = isCreateReactApp_Context() && (isJestEnv_Capable() || isVitestEnv_Capable())
+  ? process.env.NODE_ENV === "test" : 
+  : import.meta.env.MODE === "test" || Boolean(import.meta.env.VITEST);
+export const IS_DEV_ENV = isCreateReactApp_Context() 
+  ? process.env.NODE_ENV !== "production"
+  : isViteApp_Context() 
+    ? import.meta.env.DEV 
+    : false;
+
 /* 
   @INFO:
     
