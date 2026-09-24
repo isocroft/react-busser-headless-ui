@@ -10,7 +10,7 @@ import { useOutsideClick } from "react-busser";
 
 import type { Ref, MutableRefObject } from "react";
 
-import { useGenericId, useRouteChanged } from "../../_shared/helpers";
+import { useGenericId, useRouteChanged } from "../../_shared/hooks";
   
 const PopoverContext = createContext<{
   closeTriggerEventNameSuffix: string;
