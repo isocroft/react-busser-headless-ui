@@ -348,6 +348,71 @@ export const buildPaginatorRenderProps = ({
 };
 
 /**
+ * sprintf:
+ * 
+ * Like `fmt.Sprintf` with Go-like error reporting.
+ * 
+ * @param {String} format -
+ * @param {Array.<*>} args - 
+ * 
+ * @throws {TypeError}
+ * @returns {String}
+ */
+export const sprintf = (format: string, ...args: unknown[]) => {
+  let argIndex = 0;
+  const usedArgs = new Array(args.length).fill(false);
+
+  if (typeof format !== "string") {
+    throw new TypeError("sprinf(...): argument 1 is not a string");
+  }
+
+  const result = format.replace(/%([%dsvx])/g, (match, verb) => {
+    // Handle literal percent sign %%
+    if (verb === '%') return '%';
+
+    // Check for missing arguments
+    if (argIndex >= args.length) {
+      return `%!${verb}(MISSING)`;
+    }
+
+    const arg = args[argIndex];
+    usedArgs[argIndex] = true;
+    argIndex++;
+
+    // Type checking for %d (signed decimal number)
+    if (verb === 'd') {
+      if (Number.isNaN(arg) || typeof arg !== 'number' || !Number.isInteger(arg)) {
+        return `%!${verb}(${typeof arg}=${arg})`;
+      }
+      return arg.toString();
+    }
+
+    // Standard string/value formatting for %s or %v
+    if (verb === 's' || verb === 'v') {
+      return String(arg);
+    }
+    
+    // Hexadecimal formatting for %x
+    if (verb === 'x') {
+      return typeof arg === 'number' ? arg.toString(16) : `%!${verb}(${typeof arg}=${arg})`;
+    }
+
+    return match; // Fallback for unsupported verbs
+  });
+
+  // Check for extra arguments not used by the format string
+  let finalResult = result;
+
+  args.forEach((arg, i) => {
+    if (!usedArgs[i]) {
+      finalResult += `%!(EXTRA ${typeof arg}=${arg})`;
+    }
+  });
+
+  return finalResult;
+};
+
+/**
  * hasChildren:
  *
  *
