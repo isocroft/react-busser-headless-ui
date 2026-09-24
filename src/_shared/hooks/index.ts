@@ -8,8 +8,8 @@ import type { CurrentPageTriggerDetail } from "./helpers";
 /* Shadows the global so the file type-checks without `@types/node`. */
 declare const process: { env: { NODE_ENV?: string } };
 
-const IS_TEST_ENV = process.env.NODE_ENV === "test";
-const IS_DEV_ENV = process.env.NODE_ENV !== "production";
+export const IS_TEST_ENV = process.env.NODE_ENV === "test";
+export const IS_DEV_ENV = process.env.NODE_ENV !== "production";
 
 /**
  * @typedef {Object} PaginatorEventHandlers
