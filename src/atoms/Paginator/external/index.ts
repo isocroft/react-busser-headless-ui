@@ -16,7 +16,7 @@ import type {
   PaginatorEventHandlers, 
   PaginatorRenderProps, 
   PaginatorTriggerCallbacks
-} from "../../shared/helpers";
+} from "../../_shared/helpers";
 
 import {
   buildPaginatorRenderProps,
@@ -24,7 +24,7 @@ import {
   clampIndex,
   getVisiblePageWindow,
   PAGINATOR_EVENTS
-} from "../shared/helpers";
+} from "../_shared/helpers";
 
 /* @INFO: re-exported so callers rendering the table need one import, not two */
 export { flexRender };
