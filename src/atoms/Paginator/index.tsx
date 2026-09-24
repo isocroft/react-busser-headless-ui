@@ -625,3 +625,95 @@ const { props: paginatorProps } = useRenderScopedPaginatorProps({
 </Paginator>
 
 */
+
+
+/*
+  
+  @EXAMPLE:
+  
+  const people = [
+    {
+      firstName: 'tanner',
+      lastName: 'linsley',
+      age: 24,
+      visits: 100,
+      status: 'In Relationship',
+      progress: 50,
+    },
+    {
+      firstName: 'tandy',
+      lastName: 'miller',
+      age: 40,
+      visits: 40,
+      status: 'Single',
+      progress: 80,
+    },
+    {
+      firstName: 'joe',
+      lastName: 'dirte',
+      age: 45,
+      visits: 20,
+      status: 'Complicated',
+      progress: 10,
+    }
+  ];
+  
+  const columns: Array<ColumnDef<Person, any>> = [
+    { accessorKey: "name", header: "Name" },
+    { accessorKey: "email", header: "Email" }
+  ];
+  
+  const { props: paginatorProps, table } = useDataScopedPaginatorProps({
+    data: people,
+    columns,
+    pageSize: 25,
+    pageSearchParamName: "page",
+    pageSliceSpanActive: true
+  });
+  
+  <Table>
+    <thead>
+      {table.getHeaderGroups().map((headerGroup) => (
+        <tr key={headerGroup.id}>
+          {headerGroup.headers.map((header) => (
+            <th key={header.id}>
+              {header.isPlaceholder
+                ? null
+                : flexRender(header.column.columnDef.header, header.getContext())}
+            </th>
+          ))}
+        </tr>
+      ))}
+    </thead>
+    <tbody>
+      {table.getRowModel().rows.map((row) => (
+        <tr key={row.id}>
+          {row.getVisibleCells().map((cell) => (
+            <td key={cell.id}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+  
+  <Paginator className={""} {...paginatorProps}>
+    <Paginator.Caption textTemplate={"Page %d of %d"} />
+  
+    <Paginator.LinkGroup className={""}>
+      <Paginator.ControlLink className={""} kind={"prev"}>
+        <span>Previous</span>
+      </Paginator.ControlLink>
+      <Paginator.RangeLinks
+        className={""}
+        wrapperClassName={""}
+        currentPageActiveClassName={""}
+      />
+      <Paginator.ControlLink className={""} kind={"next"}>
+        <span>Next</span>
+      </Paginator.ControlLink>
+    </Paginator.LinkGroup>
+  </Paginator>
+  
+  */
