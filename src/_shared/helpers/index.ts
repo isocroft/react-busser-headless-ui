@@ -72,10 +72,11 @@ const isVitestEnv_Capable = () => {
   );
 };
 
-export const IS_TEST_ENV = isCreateReactApp_Context() && (isJestEnv_Capable() || isVitestEnv_Capable())
-  ? process.env.NODE_ENV === "test" : 
-  : import.meta.env.MODE === "test" || Boolean(import.meta.env.VITEST);
-export const IS_DEV_ENV = isCreateReactApp_Context() 
+export const IS_TEST_ENV = isCreateReactApp_Context({ noStrictEnvCheck: false }) 
+  && (isJestEnv_Capable({ noStrictEnvCheck: false }) || isVitestEnv_Capable())
+    ? process.env.NODE_ENV === "test"
+    : import.meta.env.MODE === "test" || Boolean(import.meta.env.VITEST);
+export const IS_DEV_ENV = isCreateReactApp_Context({ noStrictEnvCheck: false }) 
   ? process.env.NODE_ENV !== "production"
   : isViteApp_Context() 
     ? import.meta.env.DEV 
