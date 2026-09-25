@@ -38,19 +38,19 @@ import ContextFileBox from "./molecules/ContextFileBox";
 import ContextSwitchBox from "./molecules/ContextSwitchBox";
 import ContextRadioBox from "./molecules/ContextRadioBox";
 import ContextRadioBoxList from "./molecules/ContextRadioBoxList";
-//import Modal from "./molecules/Modal";
 
 /** #ORGANISMS */
 
 import ContextTextBox from "./organisms/ContextTextBox";
 import ContextForm from "./organisms/ContextForm";
 import ContextFileZoneBox from "./organisms/ContextFileZoneBox";
+import Modal from "./organisms/Modal";
 
 
 
 /**---------------- HOOKS ---------------------**/
 import { useDataScopedPaginatorProps, useRenderScopedPaginatorProps } from "./atoms/Paginator/external";
-//import { useModal } from "./molecules/Modal";
+import { useModal } from "./organisms/Modal/external";
 
 export {
   Avatar,
@@ -91,8 +91,9 @@ export {
   ContextTextBox,
   ContextForm,
   ContextFileZoneBox,
-
+  Modal,
 
   useDataScopedPaginatorProps,
-  useRenderScopedPaginatorProps
+  useRenderScopedPaginatorProps,
+  useModal
 };
