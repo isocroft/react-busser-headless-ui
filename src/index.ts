@@ -90,5 +90,9 @@ export {
 
   ContextTextBox,
   ContextForm,
-  ContextFileZoneBox
+  ContextFileZoneBox,
+
+
+  useDataScopedPaginatorProps,
+  useRenderScopedPaginatorProps
 };
