@@ -7,6 +7,94 @@ import type { CurrentPageTriggerDetail } from "../helpers";
 
 import { IS_TEST_ENV, IS_DEV_ENV } from "../helpers";
 
+const canUseDOM =
+    typeof window !== "undefined" && typeof window.document !== "undefined";
+
+let styleUsage = null;
+
+/* @HINT: useLayoutEffect warns during SSR; fall back to useEffect on the server. */
+export const useIsomorphicLayoutEffect = canUseDOM && typeof React.useLayoutEffect === "function"
+  ? React.useLayoutEffect
+  : React.useEffect;
+  
+/* @HINT: Inject styles before layout when React supports it (React 18+). */
+const useStyleInsertionEffect: typeof React.useLayoutEffect =
+  (React as unknown as { useInsertionEffect?: typeof React.useLayoutEffect })
+    .useInsertionEffect ?? useIsomorphicLayoutEffect;
+
+/** 
+ * useMergeRef:
+ * 
+ * Merge a local ref with a forwarded ref (object or callback).
+ * 
+ * @param {Array.<React.Ref<T> | undefined>} refs -
+ * 
+ * @returns {(node: T | null) => void}
+ */
+function useMergedRef<T>(...refs: Array<React.Ref<T> | undefined>) {
+  return React.useCallback(
+    (node: T | null) => {
+      refs.forEach((ref) => {
+        if (typeof ref === "function") ref(node);
+        else if (ref) (ref as React.MutableRefObject<T | null>).current = node;
+      });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    refs
+  );
+}
+
+/**
+ * useShareStyle:
+ * 
+ * Adds a <style> tag once and removes it only when the LAST component that needs
+ * it unmounts.
+ * 
+ * @param {String} id - 
+ * @param {String} cssText -
+ * 
+ * @returns {Void}
+ */
+function useSharedStyle(id: string, cssText: string) {
+  const [$styleUsage] = React.useState(() => {
+    return styleUsage = new Map<string, number>(), styleUsage;
+  });
+  
+  useBeforePageUnload(() => {
+      window.setTimeout(() => {
+        styleUsage = null;
+      }, 0);
+    },
+    {
+      when: $styleUsage !== null && $styleUsage.size === 0,
+      message: "",
+      extraWatchProperty: "",
+    }
+  );
+  
+  useStyleInsertionEffect(() => {
+    const count = $styleUsage.get(id) ?? 0;
+    $styleUsage.set(id, count + 1);
+
+    if (count === 0 && !window.document.getElementById(id)) {
+      const style = window.document.createElement("style");
+      style.id = id;
+      style.textContent = cssText;
+      window.document.head.appendChild(style);
+    }
+
+    return () => {
+      const next = ($styleUsage.get(id) ?? 1) - 1;
+      if (next > 0) {
+        $styleUsage.set(id, next);
+        return;
+      }
+      $styleUsage.delete(id);
+      window.document.getElementById(id)?.remove();
+    };
+  }, [id, cssText]);
+}
+
 /**
  * @typedef {Object} PaginatorEventHandlers
  * @property {Function} onPrev -
@@ -111,7 +199,7 @@ export const usePaginatorEventBridge = (
 /**
  * usePageSearchParam:
  *
- * Reads and writes the current page through React Router.
+ * Reads and writes the current page through [React-Router].
  *
  * @param {String} pageSearchParamName -
  * @param {Number} initialCurrentPage -
@@ -172,8 +260,7 @@ export const usePageSearchParam = (
 /**
  * useRouteChanged:
  *
- *
- *
+ * Detect when the route of a ReactJS page component has changed.
  *
  * @param {Function} callback -
  *
@@ -186,7 +273,7 @@ export function useRouteChanged(callback = (() => undefined) as Function) {
     immutableRef: true,
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     function onHistoryEntryModified() {
       stableCallback();
     }
@@ -315,3 +402,5 @@ export const useGenericId = useOriginId
 
       return innerId;
     };
+
+export { useMergedRef, useSharedStyle };
