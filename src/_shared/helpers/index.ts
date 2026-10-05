@@ -133,6 +133,21 @@ export const PAGINATOR_EVENTS = {
 } as const;
 
 /**
+ * composeClassesModule:
+ *
+ *
+ *
+ *
+ *
+ * @param {Array.<*>} styles
+ *
+ * @returns {String}
+ */
+ export const composeClassesModule = (...styles: Array<string | false | null | undefined>): string => {
+  return Array.from(new Set(styles.filter(Boolean).join(" "))).join(" ");
+};
+
+/**
  * getPageSliceSpan:
  *
  *
