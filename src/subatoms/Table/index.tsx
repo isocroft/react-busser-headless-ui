@@ -369,7 +369,6 @@ const Row = forwardRef<
   );
 });
 
-/* ----------------------------- Polymorphic cells ---------------------------- */
 
 type PolymorphicProps<E extends React.ElementType, P> = P & {
   /* @HINT: Element or component to render instead of the default cell. */
