@@ -12,7 +12,7 @@ const canUseDOM =
 
 let styleUsage = null;
 
-/* @HINT: useLayoutEffect warns during SSR; fall back to useEffect on the server. */
+/* @HINT: `useLayoutEffect(...)` warns during SSR; fall back to useEffect on the server. */
 export const useIsomorphicLayoutEffect = canUseDOM && typeof React.useLayoutEffect === "function"
   ? React.useLayoutEffect
   : React.useEffect;
@@ -45,6 +45,50 @@ function useMergedRef<T>(...refs: Array<React.Ref<T> | undefined>) {
 }
 
 /**
+ * useRoutingChanged:
+ *
+ * Executes a callback whenever the history URL state is changed.
+ * Detect when the route of a ReactJS page component has changed.
+ *
+ * @param {Function} callback -
+ *
+ * @returns {void}
+ */
+
+/* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
+export function useRoutingChanged(callback = (() => undefined) as Function) {
+    const stableCallback = useEffectCallback(() => callback(), {
+      immutableRef: true,
+    });
+  
+    React.useEffect(() => {
+      function onHistoryEntryModified() {
+        stableCallback();
+      }
+  
+      window.addEventListener("popstate", onHistoryEntryModified, false);
+  
+      return () => {
+        window.removeEventListener("popstate", onHistoryEntryModified, false);
+      };
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
+    }, []);
+  
+    useBeforePageUnload(
+      () => {
+        window.setTimeout(() => {
+          stableCallback();
+        }, 0);
+      },
+      {
+        when: true,
+        message: "",
+        extraWatchProperty: "",
+      }
+    );
+};
+
+/**
  * useShareStyle:
  * 
  * Adds a <style> tag once and removes it only when the LAST component that needs
@@ -58,6 +102,15 @@ function useMergedRef<T>(...refs: Array<React.Ref<T> | undefined>) {
 function useSharedStyle(id: string, cssText: string) {
   const [$styleUsage] = React.useState(() => {
     return styleUsage = new Map<string, number>(), styleUsage;
+  });
+
+  useRoutingChanged(() => {
+    if (canUseDOM) {
+      const $style = window.document.getElementById(id);
+      if ($style) {
+        window.document.head.removeChild($style);
+      }
+    }
   });
   
   useBeforePageUnload(() => {
@@ -255,49 +308,6 @@ export const usePageSearchParam = (
     rawPageIndex,
     writePageIndexToURL,
   } as const;
-};
-
-/**
- * useRouteChanged:
- *
- * Detect when the route of a ReactJS page component has changed.
- *
- * @param {Function} callback -
- *
- * @returns {void}
- */
-
-/* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
-export function useRouteChanged(callback = (() => undefined) as Function) {
-  const stableCallback = useEffectCallback(() => callback(), {
-    immutableRef: true,
-  });
-
-  React.useEffect(() => {
-    function onHistoryEntryModified() {
-      stableCallback();
-    }
-
-    window.addEventListener("popstate", onHistoryEntryModified, false);
-
-    return () => {
-      window.removeEventListener("popstate", onHistoryEntryModified, false);
-    };
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, []);
-
-  useBeforePageUnload(
-    () => {
-      window.setTimeout(() => {
-        stableCallback();
-      }, 0);
-    },
-    {
-      when: true,
-      message: "",
-      extraWatchProperty: "",
-    }
-  );
 };
 
 function getUseId() {
