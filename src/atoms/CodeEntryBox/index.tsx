@@ -4,6 +4,7 @@ import InputBox from "../../subatoms/InputBox";
 import type { FC } from "react";
 import type { InputBoxProps } from "../../subatoms/InputBox";
 
+import { useGenericId, useSharedStyle } from "../../_shared/hooks";
 import { hasChildren, isSubChild } from "../../_shared/helpers";
 
 interface CompositionEvent<T = Element>
@@ -21,6 +22,7 @@ type OTPEntryBoxProps = {
   required?: boolean;
   defaultValue?: string;
   disabled?: boolean;
+  title?: string;
   className?: string;
   wrapperClassName?: string;
   onChange?: (
@@ -138,11 +140,7 @@ const CodeEntryBox = ({
   children,
   ...props
 }: React.PropsWithChildren<OTPEntryBoxProps>) => {
-  const keyPrefix = useRef<string>(
-    ((Math.random() / 0.95 + 1) * new Date().getTime())
-      .toString(32)
-      .replace(/([.\d])+/g, "")
-  ).current;
+  const keyPrefix = useGenericId();
 
   const STYLESHEET_ID = "react-busser-headless-ui_codeentrybox";
   const MAX_NUMBER_INPUTS = slots;
@@ -167,11 +165,26 @@ const CodeEntryBox = ({
     inputMode,
   };
 
-  let stylesheetRefCount = 0;
+  const cssText = `
+    [data-codeentrybox-root] [type="text"][data-codeentrybox-hidden] {
+      font-size: 0;
+      padding: 0;
+      visibility: hidden;
+      pointer-events: none;
+      position: absolute;
+    }
+
+    [data-codeentrybox-root] legend {
+      font-size: 0;
+      padding: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+  `;
 
   const hiddenInputRef = useRef<HTMLInputElement | null>(null);
 
-  const setInputLettersArray = (letters: string[]): boolean => {
+  const setInputLettersArray = (letters: string | string[]): boolean => {
     let returnValue = false;
     if (!Array.isArray(letters)) {
       return returnValue;
@@ -190,7 +203,9 @@ const CodeEntryBox = ({
           setInputValue.call(hiddenInputRef.current, newValue);
           setTimeout(
             (val) => {
-              hiddenInputRef.current.setAttribute("value", val);
+              if hiddenInputRef.current) {
+                hiddenInputRef.current.setAttribute("value", val);
+              }
             },
             0,
             newValue
@@ -215,83 +230,11 @@ const CodeEntryBox = ({
   };
 
   // @HINT: Priority: entryType > allCharactersAllowed
-  const [selectedRegex] = useState<RegExp>(
-    entryType === "numeric" ? NUMBER_REGEX : ALL_REGEX
-  );
+  const [selectedRegex] = useState<RegExp>(() => {
+    return entryType === "numeric" ? NUMBER_REGEX : ALL_REGEX
+  });
 
-  useEffect(() => {
-    stylesheetRefCount += 1;
-
-    const styleSheetsOnly = [].slice
-      .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-      .filter((sheet) => {
-        if (sheet.ownerNode) {
-          return sheet.ownerNode.nodeName === "STYLE";
-        }
-        return false;
-      })
-      .map((sheet) => {
-        if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-          return sheet.ownerNode.id;
-        }
-        return "";
-      })
-      .filter((id) => id !== "");
-
-    if (
-      styleSheetsOnly.length > 0 &&
-      /* @ts-ignore */
-      styleSheetsOnly.includes(STYLESHEET_ID)
-    ) {
-      return;
-    }
-
-    /*
-      if (window.document.getElementById(STYLESHEET_ID) !== null) {
-        return;
-      }
-    */
-
-    const codeEntryBoxStyle = window.document.createElement("style");
-    codeEntryBoxStyle.id = STYLESHEET_ID;
-
-    codeEntryBoxStyle.innerHTML = `
-      [data-codeentrybox-root] [type="text"][data-codeentrybox-hidden] {
-        font-size: 0;
-        padding: 0;
-        visibility: hidden;
-        pointer-events: none;
-        position: absolute;
-      }
-
-      [data-codeentrybox-root] legend {
-        font-size: 0;
-        padding: 0;
-        visibility: hidden;
-        pointer-events: none;
-      }
-    `;
-    window.document.head.appendChild(codeEntryBoxStyle);
-
-    return () => {
-      stylesheetRefCount -= 1;
-
-      if (stylesheetRefCount > 0) {
-        /* 
-          @HINT:
-          
-          If there are still `<CodeEntryBox />` components mounted, don't pull out 
-          the stylesheet from the DOM
-        */
-        return;
-      }
-
-      const codeEntryBoxStyle = window.document.getElementById(STYLESHEET_ID);
-      if (codeEntryBoxStyle !== null && codeEntryBoxStyle.parentNode !== null) {
-        codeEntryBoxStyle.parentNode.removeChild(codeEntryBoxStyle);
-      }
-    };
-  }, []);
+  useSharedStyle(STYLESHEET_ID, cssText);
 
   const focusNextInput = (
     index: number,
@@ -419,7 +362,7 @@ const CodeEntryBox = ({
         setInputValue.call(nextInput, char);
         nextInput.setAttribute("name", "_");
         nextInput.dispatchEvent(new Event("input", { bubbles: true }));
-        nextInput = nextInput.nextElementSibling;
+        nextInput = nextInput.nextElementSibling as EventTarget & HTMLInputElement;
       }
     });
 
@@ -483,6 +426,7 @@ const CodeEntryBox = ({
   return (
     <fieldset
       className={wrapperClassName}
+      /** @ts-ignore */
       onPasteCapture={handlePasteCapture}
       data-codeentrybox-root={"yes"}
     >
