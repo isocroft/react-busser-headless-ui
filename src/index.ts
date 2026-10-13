@@ -33,6 +33,7 @@ import SwitchBox from "./atoms/SwitchBox";
 import CalendarBox from "./molecules/CalendarBox";
 import ClipDataBox from "./molecules/ClipDataBox";
 import ComboBox from "./molecules/ComboBox";
+import Tabs from "./molecules/Tabs";
 import FileZoneBox from "./molecules/FileZoneBox";
 import ContextFileBox from "./molecules/ContextFileBox";
 import ContextSwitchBox from "./molecules/ContextSwitchBox";
@@ -50,6 +51,7 @@ import Modal from "./organisms/Modal";
 
 /**---------------- HOOKS ---------------------**/
 import { useDataScopedPaginatorProps, useRenderScopedPaginatorProps } from "./atoms/Paginator/external";
+import { useTabs } from "./molecules/Tabs/external";
 import { useModal } from "./organisms/Modal/external";
 
 export {
@@ -81,6 +83,7 @@ export {
 
   CalendarBox,
   FileZoneBox,
+  Tabs,
   ContextFileBox,
   ContextRadioBox,
   ContextSwitchBox,
@@ -95,5 +98,6 @@ export {
 
   useDataScopedPaginatorProps,
   useRenderScopedPaginatorProps,
-  useModal
+  useModal,
+  useTabs
 };
