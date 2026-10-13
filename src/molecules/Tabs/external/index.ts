@@ -1,4 +1,4 @@
-import { useSearchParamsState } from "react-busser";
+import { useSearchParamsState, useIsFirstRender } from "react-busser";
 import { DEFAULT_TAB_QUERY } from "../internal";
 
 /**
@@ -12,6 +12,7 @@ export const useTabs = (
   activeTabIndex = 1,
   replaceInHistory = false
 ) => {
+  const isFirstRender = useIsFirstRender();
   const [activeTabId, setUrlSearchParamsState] = useSearchParamsState(
     activeTabIdQuery,
     replaceInHistory,
@@ -26,6 +27,10 @@ export const useTabs = (
       return String(currentTabIndex + 1);
     });
   };
+
+  if (isFirstRender) {
+    activate(activeTabIndex);
+  }
 
   return [activate, activeTabIdQuery, Number(activeTabId)] as const;
 };
