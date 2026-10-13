@@ -9,6 +9,19 @@ declare const process: {
   };
 };
 
+/**
+ * @typedef {Object} ReactAppContextOption
+ * @property {Boolean} noStrictEnvCheck
+ */
+
+/**
+ * isCreateReactApp_Context:
+ *
+ *
+ * @param {ReactAppContextOption} 
+ *
+ * @returns {Boolean}
+ */
 const isCreateReactApp_Context = ({ noStrictEnvCheck = false }) => {
   const hasCRAEnvVarPrefix = (noStrictCheck = false) =>
     Boolean(
@@ -30,6 +43,14 @@ const isCreateReactApp_Context = ({ noStrictEnvCheck = false }) => {
   );
 };
 
+/**
+ * isViteApp_Context:
+ *
+ *
+ *
+ *
+ * @returns {Boolean}
+ */
 const isViteApp_Context = () => {
   const hasViteEnvVarPrefix = () =>
     Boolean(
@@ -47,6 +68,14 @@ const isViteApp_Context = () => {
   );
 };
 
+/**
+ * isJestEnv_Capable:
+ *
+ *
+ * @param {ReactAppContextOption} 
+ *
+ * @returns {Boolean}
+ */
 const isJestEnv_Capable = ({ noStrictEnvCheck = true }) => {
   const hasJestGlobalDefined =
     "jest" in global &&
@@ -65,10 +94,67 @@ const isJestEnv_Capable = ({ noStrictEnvCheck = true }) => {
   );
 };
 
+/**
+ * isVitestEnv_Capable:
+ *
+ *
+ *
+ *
+ * @returns {Boolean}
+ */
 const isVitestEnv_Capable = () => {
   return (
     (isViteApp_Context() || (process && "env" in process)) &&
     (process.env.VITEST || import.meta.env.VITEST)
+  );
+};
+
+/**
+ * isDOMElementOverflowing:
+ *
+ * @param {HTMLElement} element -
+ *
+ * @returns {Boolean}
+ */
+const isDOMElementOverflowing = (element: HTMLElement): boolean => {
+  if (!element || !(element instanceof window.HTMLElement)) {
+    throw new TypeError(
+      `isDOMElementOverflowing(${element}): argument 1 is not a DOM element`
+    );
+  }
+  
+  const hasHorizontalOverflow = element.scrollWidth > element.clientWidth;
+  const hasVerticalOverflow = element.scrollHeight > element.clientHeight;
+
+  return hasHorizontalOverflow || hasVerticalOverflow;
+};
+
+/**
+ * isElementOverflowingParent:
+ *
+ * @param {HTMLElement} element -
+ *
+ * @returns {Boolean}
+ */
+const isElementOverflowingParent = (element: HTMLElement) => {
+  if (!element || !(element instanceof window.HTMLElement)) {
+    throw new TypeError(`
+      isElementOverflowingParent(${element}): argument 1 is not a DOM element`
+    );
+  }
+  
+  const parent = element.parentElement;
+  if (!parent) return false;
+
+  const childRect = element.getBoundingClientRect();
+  const parentRect = parent.getBoundingClientRect();
+
+  /* @HINT: Checks if the child extends past any of the parent's four boundaries */
+  return (
+    childRect.left < parentRect.left ||
+    childRect.right > parentRect.right ||
+    childRect.top < parentRect.top ||
+    childRect.bottom > parentRect.bottom
   );
 };
 
