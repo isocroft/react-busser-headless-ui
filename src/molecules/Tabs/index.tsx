@@ -1,22 +1,16 @@
 import React, {
-  FC,
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from "react";
 
-import { DEFAULT_TAB_QUERY, writeTabQuery, useTabsCore } from "./internal";
+import { DEFAULT_TAB_QUERY, useTabsCore } from "./internal";
 import { getChildrenOfType } from "../../_shared/helpers";
 import { useGenericId, useSharedStyle } from "../../_shared/hooks";
 
-type CustomElementTagProps<T extends React.ElementType> =
-  React.ComponentPropsWithRef<T> & {
-    as?: T;
-  };
+import type { FC } from "react";
 
 interface TabsContextValue {
   baseId: string;
