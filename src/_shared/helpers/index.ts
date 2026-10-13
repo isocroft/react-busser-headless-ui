@@ -637,6 +637,27 @@ export const hasRenderableChildren = (
 };
 
 /**
+ * getChildrenOfType:
+ *
+ *
+ *
+ * @param {React.ReactNode} children -
+ * @param {React.ComponentType} type -
+ *
+ * @returns {Array.<React.ReactNode>}
+ */
+const getChildrenOfType = <P>(
+  children: React.ReactNode,
+  type: React.ComponentType<P>
+) => {
+  /** @HINT: Keeps only the valid elements of a given component type, in order. */
+  return React.Children.toArray(children).filter(
+    (child): child is React.ReactElement<P> =>
+      React.isValidElement(child) && child.type === type
+  );
+};
+
+/**
  * isSubChild:
  *
  *
