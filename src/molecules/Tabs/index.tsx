@@ -1,330 +1,301 @@
-import React, { FC, CSSProperties, useRef, useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import React, {
+  FC,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-import { useTabsCore } from "./internal";
-
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
-
-const isSubChild = <C extends React.ReactNode>(
-  child: C,
-  tag: string
-): child is C =>
-  React.isValidElement<C>(child) &&
-  (typeof child?.type === "function"
-    ? child?.type?.name === tag
-    : String(child?.type).includes(tag));
+import { DEFAULT_TAB_QUERY, writeTabQuery, useTabsCore } from "./internal";
+import { getChildrenOfType } from "../../_shared/helpers";
+import { useGenericId, useSharedStyle } from "../../_shared/hooks";
 
 type CustomElementTagProps<T extends React.ElementType> =
   React.ComponentPropsWithRef<T> & {
     as?: T;
   };
 
-const isTabsHeaderOverflowing = (
-  element: HTMLUListElement | HTMLMenuElement
-) => {
-  let currrenOverflowStyle =
-    element.style.overflow || window.getComputedStyle(element).overflow;
+interface TabsContextValue {
+  baseId: string;
+  activeTabIndex: number;
+  setActiveTabIndex: (tabIndex: number) => void;
+}
 
-  if (!currrenOverflowStyle || currrenOverflowStyle === "visible") {
-    element.style.overflow = "hidden";
+const STYLESHEET_ID = "react-busser-headless-ui_tabs";
+const BASE_CSS = `
+  .tabs_body-box {
+    width: 100%;
+    min-height: 1;
   }
 
-  let isOverflowing = element.clientWidth < element.scrollWidth;
-
-  element.style.overflow = "";
-
-  return isOverflowing;
-};
-
-const isActiveTabTitleInOverflow = (element: HTMLLIElement) => {
-  const isCorrectOffsetParent = element.parentNode === element.offsetParent;
-  if (!isCorrectOffsetParent || element.offsetParent == null) {
-    return false;
+  .tabs_header-box {
+    min-height: 1;
+    width: 100%;
+    max-width: 100%;
   }
 
-  return (
-    element.offsetLeft + element.clientWidth > element.offsetParent.clientWidth
-  );
-};
-
-
-const renderChildren = (
-  children: React.ReactNode,
-  props: { activeTab: number; onClick: React.MouseEventHandler<HTMLElement> }
-) => {
-  const oneChild = hasChildren(children, 1);
-  const noChild = hasChildren(children, 0);
-
-  if (oneChild || noChild) {
-    return null;
+  .tabs_header-inner-box {
+    overflow-x: auto;
+    position: relative; /* makes tab titles' offsetLeft relative to the list */
   }
-
-  return React.Children.map(children, (child) => {
-    switch (true) {
-      case isSubChild(child, "TabsHeader"):
-        if (!React.isValidElement<React.ReactNode & TabsHeaderProps>(child)) {
-          return null;
-        }
-
-        return React.cloneElement(child, {
-          activeTabTitleIndex: props.activeTab,
-          onClick: props.onClick,
-        });
-      case isSubChild(child, "TabsBody"):
-        if (!React.isValidElement<React.ReactNode & TabsBodyProps>(child)) {
-          return null;
-        }
-
-        return React.cloneElement(child, {
-          activeTabPanelIndex: props.activeTab,
-        });
-      default:
-        return null;
-    }
-  });
+`;
+ 
+const TabsContext = createContext<TabsContextValue | null>(null);
+ 
+/** @HINT: Position of the current Title/Panel among its siblings. */
+const TabIndexContext = createContext<number>(-1);
+ 
+const useTabsContext = (componentName: string) => {
+  const context = useContext(TabsContext);
+  if (!context) {
+    throw new Error(`<${componentName}> must be rendered inside <Tabs>.`);
+  }
+  return context;
 };
-
-interface TabsProps extends React.ComponentPropsWithRef<"section"> {
+ 
+const useTabIndex = (componentName: string, parentName: string) => {
+  const index = useContext(TabIndexContext);
+  if (index < 0) {
+    throw new Error(
+      `<${componentName}> must be a direct child of <${parentName}>.`
+    );
+  }
+  return index;
+};
+ 
+const getTabId = (baseId: string, index: number) => `${baseId}-tab-${index}`;
+const getPanelId = (baseId: string, index: number) => `${baseId}-panel-${index}`;
+ 
+interface TabsProps extends React.ComponentPropsWithoutRef<"section"> {
+  /** @HINT: Tab shown when the URL has no (valid) tab query. 0-based. */
   activeTabIndex?: number;
   activeTabIdQuery?: string;
   disableTabIdOnUrlQuery?: boolean;
+  replaceInHistory?: boolean;
 }
-
-const Tabs = ({
+ 
+const TabsRoot: FC<TabsProps> = ({
   activeTabIndex = 0,
-  activeTabIdQuery = "active_tab__react-busser",
-  className,
+  activeTabIdQuery = DEFAULT_TAB_QUERY,
   disableTabIdOnUrlQuery = false,
+  replaceInHistory = false,
   children,
-  ...props
-}: TabsProps) => {
-  const [activeTab, onClick] = useTabsCore(
-    activeTabIndex,
-    activeTabIdQuery,
-    disableTabIdOnUrlQuery
-  );
-
-  useEffect(() => {
-    const styleSheetsOnly = [].slice
-      .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-      .filter((sheet) => {
-        if (sheet.ownerNode) {
-          return sheet.ownerNode.nodeName === "STYLE";
-        }
-        return false;
-      })
-      .map((sheet) => {
-        if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-          return sheet.ownerNode.id;
-        }
-        return "";
-      })
-      .filter((id) => id !== "");
-
-    if (
-      styleSheetsOnly.length > 0 &&
-      /* @ts-ignore */
-      styleSheetsOnly.includes("react-busser-headless-ui_tabs")
-    ) {
-      return;
-    }
-
-    const tabsStyle = window.document.createElement("style");
-    tabsStyle.id = "react-busser-headless-ui_tabs";
-
-    tabsStyle.innerHTML = `  
-      .tabs_body-box {
-        width: 100%;
-        min-height: 1;
-      }
-
-      .tabs_header-box {
-        min-height: 1;
-        width: 100%;
-        max-width: 100%;
-      }
-
-      .tabs_header-inner-box {
-        overflow-x: auto;
-        position: relative; /* @HINT: Needed to correctly calculate 'offsetParent' for tab titles */
-      }
-    `;
-    window.document.head.appendChild(tabsStyle);
-
-    return () => {
-      window.document.head.removeChild(tabsStyle);
-    };
-  }, []);
-
-  return (
-    <section className={className} {...props} role="tabs">
-      {renderChildren(children, {
-        onClick,
-        activeTab,
-      })}
-    </section>
-  );
-};
-
-interface TabTitleProps extends React.ComponentPropsWithRef<"li"> {
-  isActive?: boolean;
-  "data-tab-title-index": string;
-}
-
-const TabTitle: FC<TabTitleProps> = ({
-  children,
-  className,
-  isActive,
   ...props
 }) => {
+  /** @HINT: Injects the base styles once and removes them when the last Tabs unmounts. */
+  useSharedStyle(STYLESHEET_ID, BASE_CSS);
+ 
+  const baseId = useGenericId();
+  const [currentTabIndex, setActiveTabIndex] = useTabsCore(
+    activeTabIndex,
+    activeTabIdQuery,
+    disableTabIdOnUrlQuery,
+    replaceInHistory
+  );
+ 
+  const contextValue = useMemo<TabsContextValue>(
+    () => ({ baseId, activeTabIndex: currentTabIndex, setActiveTabIndex }),
+    [baseId, currentTabIndex, setActiveTabIndex]
+  );
+ 
+  return (
+    <TabsContext.Provider value={contextValue}>
+      <section {...props}>{children}</section>
+    </TabsContext.Provider>
+  );
+};
+ 
+type TabsHeaderProps = Omit<React.HTMLAttributes<HTMLUListElement>, "role"> & {
+  as?: "ul" | "menu";
+  wrapperClassName?: string;
+};
+ 
+const Header: FC<TabsHeaderProps> = ({
+  as = "ul",
+  className = "",
+  wrapperClassName = "",
+  onKeyDown,
+  children,
+  ...props
+}) => {
+  const { activeTabIndex, setActiveTabIndex } = useTabsContext("Tabs.Header");
+  const listRef = useRef<HTMLUListElement>(null);
+  const titles = getChildrenOfType(children, Title);
+ 
+  /** @HINT: `<menu>` and `<ul>` share the same list semantics and DOM API we rely on. */
+  const ListElement = as as "ul";
+ 
+  useEffect(() => {
+    const list = listRef.current;
+    let activeTitle = null; 
+    
+    if (list) {
+      activeTitle = list.querySelector<HTMLElement>(
+        `[data-tab-title-index="${activeTabIndex}"]`
+      );
+    }
+
+    if (!list || !activeTitle) {
+      return;
+    }
+ 
+    const titleStart = activeTitle.offsetLeft;
+    const titleEnd = titleStart + activeTitle.offsetWidth;
+
+    /** @HINT: Keep the active title visible when the header scrolls horizontally. */
+    if (titleStart < list.scrollLeft) {
+      list.scrollLeft = titleStart;
+    } else if (titleEnd > list.scrollLeft + list.clientWidth) {
+      list.scrollLeft = titleEnd - list.clientWidth;
+    }
+  }, [activeTabIndex]);
+ 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLUListElement>) => {
+    onKeyDown?.(event);
+    if (event.defaultPrevented || titles.length === 0) {
+      return;
+    }
+ 
+    const lastIndex = titles.length - 1;
+    const current = Math.min(Math.max(activeTabIndex, 0), lastIndex);
+    let nextIndex: number;
+ 
+    switch (event.key) {
+      case "ArrowRight":
+        nextIndex = current === lastIndex ? 0 : current + 1;
+        break;
+      case "ArrowLeft":
+        nextIndex = current === 0 ? lastIndex : current - 1;
+        break;
+      case "Home":
+        nextIndex = 0;
+        break;
+      case "End":
+        nextIndex = lastIndex;
+        break;
+      default:
+        return;
+    }
+ 
+    event.preventDefault();
+    setActiveTabIndex(nextIndex);
+    
+    if (listRef.current) {
+      const tabTitle = listRef.current.querySelector<HTMLElement>(
+        `[data-tab-title-index="${nextIndex}"]`
+      );
+      if (tabTitle) {
+        tabTitle.focus();
+      }
+    }
+  };
+ 
+  return (
+    <div className={`tabs_header-box ${wrapperClassName}`.trim()}>
+      <ListElement
+        {...props}
+        ref={listRef}
+        role="tablist"
+        className={`tabs_header-inner-box ${className}`.trim()}
+        onKeyDown={handleKeyDown}
+      >
+        {titles.map((title, index) => (
+          <TabIndexContext.Provider key={title.key} value={index}>
+            {title}
+          </TabIndexContext.Provider>
+        ))}
+      </ListElement>
+    </div>
+  );
+};
+ 
+type TabTitleProps = Omit<
+  React.LiHTMLAttributes<HTMLLIElement>,
+  "id" | "role" | "tabIndex" | "aria-selected" | "aria-controls"
+>;
+ 
+const Title: FC<TabTitleProps> = ({ children, onClick, ...props }) => {
+  const { baseId, activeTabIndex, setActiveTabIndex } =
+    useTabsContext("Tabs.Title");
+  const index = useTabIndex("Tabs.Title", "Tabs.Header");
+  const isActive = index === activeTabIndex;
+ 
+  const handleClick = (event: React.MouseEvent<HTMLLIElement>) => {
+    if (typeof onClick === "function") {
+      onClick(event);
+    }
+    if (!event.defaultPrevented) {
+      setActiveTabIndex(index);
+    }
+  };
+ 
   return (
     <li
-      className={className}
       {...props}
+      id={getTabId(baseId, index)}
       role="tab"
-      aria-selected={isActive ? "true" : "false"}
+      aria-selected={isActive}
+      aria-controls={isActive ? getPanelId(baseId, index) : undefined}
       tabIndex={isActive ? 0 : -1}
+      data-tab-title-index={index}
+      onClick={handleClick}
     >
       {children}
     </li>
   );
 };
-
-type TabsHeaderProps = CustomElementTagProps<"menu" | "ul"> & {
-  activeTabTitleIndex?: number;
-  wrapperClassName?: string;
-  wrapperStyle?: CSSProperties;
-};
-
-const TabsHeader: FC<TabsHeaderProps> = ({
-  as: Component = "ul",
-  className = "",
-  wrapperClassName = "",
-  wrapperStyle,
-  activeTabTitleIndex,
-  children,
-  ...props
-}) => {
-  const tabTitleElement = useRef<HTMLUListElement | null>(null);
-
-  useEffect(() => {
-    if (!tabTitleElement.current) {
-      return;
-    }
-    if (isTabsHeaderOverflowing(tabTitleElement.current)) {
-      const activeTabElement = tabTitleElement.current.querySelector(
-        `[data-tab-title-index="${activeTabTitleIndex}"]`
-      );
-
-      if (!activeTabElement) {
-        return;
-      }
-      if (isActiveTabTitleInOverflow(activeTabElement as HTMLLIElement)) {
-        /* @HINT: Make sure that no active tab is hidden within a CSS overflow */
-        tabTitleElement.current.scrollBy(5000, 0);
-      }
-    }
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [activeTabTitleIndex]);
-
+ 
+type TabsBodyProps = React.ComponentPropsWithoutRef<"section">;
+ 
+const Body: FC<TabsBodyProps> = ({ children, className = "", ...props }) => {
+  const { activeTabIndex } = useTabsContext("Tabs.Body");
+  const panelChildren = useMemo(() => getChildrenOfType(children, Panel), [activeTabIndex, React.Children.count(children)]);
+  const activePanel = panelChildren[activeTabIndex];
+ 
   return (
-    <div className={`tabs_header-box ${wrapperClassName}`} style={wrapperStyle} role="group">
-      <Component
-        className={`tabs_header-inner-box ${className}`}
-        {...props}
-        role="tablist"
-        ref={tabTitleElement}
-      >
-        {React.Children.map(children, (child, index) => {
-          if (
-            !React.isValidElement<TabTitleProps>(child) ||
-            !isSubChild(child, "TabTitle")
-          ) {
-            return null;
-          }
-
-          return React.cloneElement(child, {
-            isActive: activeTabTitleIndex === index,
-            "data-tab-title-index": String(index),
-          });
-        })}
-      </Component>
-    </div>
+    <section {...props} className={`tabs_body-box ${className}`.trim()}>
+      <TabIndexContext.Provider value={activeTabIndex}>
+        {Boolean(activePanel) ? (
+          activePanel
+        ) : null}
+      </TabIndexContext.Provider>
+    </section>
   );
 };
-
-type TabPanelProps = React.ComponentPropsWithRef<"div">;
-
-const TabPanel: FC<TabPanelProps> = ({ children, className, ...props }) => {
+ 
+type TabPanelProps = Omit<
+  React.ComponentPropsWithoutRef<"div">,
+  "id" | "role" | "aria-labelledby"
+>;
+ 
+const Panel: FC<TabPanelProps> = ({ children, ...props }) => {
+  const { baseId } = useTabsContext("Tabs.Panel");
+  const index = useTabIndex("Tabs.Panel", "Tabs.Body");
+ 
   return (
-    <div className={className} {...props} role="tabpanel" tabIndex={0}>
+    <div
+      tabIndex={0}
+      {...props}
+      id={getPanelId(baseId, index)}
+      role="tabpanel"
+      aria-labelledby={getTabId(baseId, index)}
+    >
       {children}
     </div>
   );
 };
+ 
+TabsRoot.displayName = "Tabs";
+Header.displayName = "Tabs.Header";
+Title.displayName = "Tabs.Title";
+Body.displayName = "Tabs.Body";
+Panel.displayName = "Tabs.Panel";
 
-interface TabsBodyProps extends React.ComponentPropsWithRef<"section"> {
-  activeTabPanelIndex: number;
-}
-
-const TabsBody: FC<TabsBodyProps> = ({
-  children,
-  className = "",
-  activeTabPanelIndex,
-  ...props
-}) => {
-  const activeTabPanel = hasChildren(children, 0) ? null : React.Children.toArray(children)[activeTabPanelIndex];
-
-  return (
-    <section className={`tabs_body-box ${className}`} role="group" {...props}>
-      {activeTabPanel && isSubChild(activeTabPanel, "TabPanel") ? activeTabPanel : null}
-    </section>
-  );
-};
-
-Tabs.TabsHeader = TabsHeader;
-Tabs.TabTitle = TabTitle;
-Tabs.TabsBody = TabsBody;
-Tabs.TabPanel = TabPanel;
-
-// import { useIsFirstRender } from "react-busser";
-
-// const isFirstRender = useIsFirstRender();
-// const [activate] = useTabs("group_settings_tab", 1);
-
-// useEffect(() => {
-//   if (isFirstRender) {
-//     /* programmatically reset to the active tab to the first tab */
-//     activate(0);
-//   }
-// }, []);
-
-// <Tabs activeTabIndex={1} activeTabIdQuery={"group_settings_tab"}>
-//   <TabsHeader>
-//     <TabTitle>Maintenance</TabTitle>
-//     <TabTitle>Settings</TabTitle>
-//   </TabsHeader>
-//   <TabsBody>
-//     <TabPanel>
-//       <h4>System Maintenance</h4>
-//       <p>All system workflow patterns</p>
-//     </TabPanel>
-//     <TabPanel>
-//       <h4>General Settings</h4>
-//       <p>All settings for user app</p>
-//     </TabPanel>
-//   </TabsBody>
-// </Tabs>
-
+const Tabs = Object.assign(TabsRoot, { Header, Title, Body, Panel });
+ 
 export type {
   TabsProps,
   TabsHeaderProps,
@@ -332,5 +303,41 @@ export type {
   TabsBodyProps,
   TabPanelProps,
 };
-
+ 
 export default Tabs;
+
+/**
+ * @example:
+ * 
+ * import { useEffect } from "react";
+ * import { useIsFirstRender } from "react-busser";
+ * 
+ * const isFirstRender = useIsFirstRender();
+ * const [ activate, id, tabIndex ] = useTabs("group_settings_tab", 1);
+ *
+ * 
+ * useEffect(() => {
+ *  if (isFirstRender) {
+ *    // programmatically reset to the active tab to the first tab
+ *    activate(0);
+ *  }
+ * }, []);
+ * 
+ * 
+ * <Tabs activeTabIndex={tabIndex} activeTabIdQuery={id}>
+ *   <Tabs.Header>
+ *     <Tabs.Title>General</Tabs.Title>
+ *     <Tabs.Title>Members</Tabs.Title>
+ *   </Tabs.Header>
+ *   <Tabs.Body>
+ *     <Tabs.Panel>
+ *        <h4>General Settings</h4>
+ *        <p>All settings for user app</p>
+ *     </Tabs.Panel>
+ *     <Tabs.Panel>
+ *       <h4>>Member settings</h4>
+ *       <p>Seetings for group members</p>
+ *     </Tabs.Panel>
+ *   </Tabs.Body>
+ * </Tabs>
+ */
