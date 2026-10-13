@@ -1,94 +1,77 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
+import { useHistory, useLocation } from "react-router-dom";
+
+type History = ReturnType<typeof useHistory>;
+
+export const DEFAULT_TAB_QUERY = "active_tab__react-busser";
+
+const writeTabQuery = (
+  history: History,
+  queryKey: string,
+  tabIndex: number,
+  replaceInHistory: boolean
+) => {
+  const searchParams = new URLSearchParams(history.location.search);
+  const nextValue = String(tabIndex + 1);
+ 
+  if (searchParams.get(queryKey) === nextValue) {
+    return;
+  }
+ 
+  searchParams.set(queryKey, nextValue);
+ 
+  const nextLocation = {
+    pathname: history.location.pathname,
+    search: `?${searchParams.toString()}`,
+    hash: history.location.hash,
+  };
+ 
+  if (replaceInHistory) {
+    history.replace(nextLocation);
+  } else {
+    history.push(nextLocation);
+  }
+};
+
+/** URL values are 1-based ("?tab=1" is the first tab); state is 0-based. */
+const parseTabQueryValue = (value: string | null): number | null => {
+  if (value === null) {
+    return null;
+  }
+  const position = Number(value);
+  return Number.isInteger(position) && position >= 1 ? position - 1 : null;
+};
 
 export const useTabsCore = (
-  initialActiveTabIndex: number,
+  defaultTabIndex: number,
   activeTabIdQuery: string,
-  disableTabIdOnUrlQuery = false
+  disableTabIdOnUrlQuery: boolean,
+  replaceInHistory: boolean
 ) => {
-  const pageSearchParams = new window.URLSearchParams(window.location.search);
-  const previousActiveTabIdQuery = useRef<string>(
-    pageSearchParams.get(activeTabIdQuery) || String(initialActiveTabIndex + 1)
-  );
-
   const history = useHistory();
-  const [activeTabIndex, setActiveTabIndex] = useState<number>(() => {
-    const activeTabIdFromUrlQuery = Number(previousActiveTabIdQuery.current);
-    return activeTabIdFromUrlQuery - 1;
-  });
-
-  const handleSetActiveTab = useCallback<React.MouseEventHandler<HTMLElement>>(
-    (event: React.MouseEvent<HTMLElement>) => {
-      const tabHeaderNode = event.currentTarget as Node;
-      const targetNode = event.target as Node;
-      const parentNode = targetNode.parentNode as HTMLElement;
-      const clickedTabIndex = Number(
-        tabHeaderNode.contains(targetNode) &&
-          (event.target as HTMLElement).hasAttribute("data-tab-title-index")
-          ? (event.target as HTMLElement).dataset.tabTitleIndex
-          : targetNode.parentNode &&
-            tabHeaderNode.contains(targetNode.parentNode) &&
-            parentNode.hasAttribute("data-tab-title-index")
-          ? parentNode.dataset.tabTitleIndex
-          : parentNode?.parentNode &&
-            tabHeaderNode.contains(parentNode.parentNode) &&
-            (parentNode?.parentNode as HTMLElement).hasAttribute(
-              "data-tab-title-index"
-            )
-          ? (parentNode?.parentNode as HTMLElement).dataset.tabTitleIndex
-          : "-1"
+  const location = useLocation();
+  const [localTabIndex, setLocalTabIndex] = useState(defaultTabIndex);
+ 
+  const urlTabIndex = disableTabIdOnUrlQuery
+    ? null
+    : parseTabQueryValue(
+        new URLSearchParams(location.search).get(activeTabIdQuery)
       );
-
-      if (!Number.isNaN(clickedTabIndex) && clickedTabIndex !== -1) {
-        setActiveTabIndex((prevTabIndex) => {
-          if (prevTabIndex === clickedTabIndex) {
-            return prevTabIndex;
-          }
-          return clickedTabIndex;
-        });
+ 
+  const activeTabIndex = urlTabIndex ?? localTabIndex;
+ 
+  const setActiveTabIndex = useCallback(
+    (tabIndex: number) => {
+      if (disableTabIdOnUrlQuery) {
+        setLocalTabIndex(tabIndex);
+      } else {
+        writeTabQuery(history, activeTabIdQuery, tabIndex, replaceInHistory);
       }
-      /* eslint-disable-next-line react-hooks/exhaustive-deps */
     },
-    []
+    [history, activeTabIdQuery, disableTabIdOnUrlQuery, replaceInHistory]
   );
-
-  useEffect(() => {
-    if (disableTabIdOnUrlQuery) {
-      return;
-    }
-
-    const onTabIdQueryChange = (
-      $location: ReturnType<typeof useHistory>["location"]
-    ) => {
-      const currentPageSearchParams = new window.URLSearchParams(
-        $location.search
-      );
-      const currentTabfromUrlQuery = Number(
-        currentPageSearchParams.get(activeTabIdQuery)
-      );
-
-      if (
-        !Number.isNaN(currentTabfromUrlQuery) &&
-        previousActiveTabIdQuery.current !== String(currentTabfromUrlQuery)
-      ) {
-        previousActiveTabIdQuery.current = String(currentTabfromUrlQuery);
-        setActiveTabIndex((prevTabIndex) => {
-          if (prevTabIndex === currentTabfromUrlQuery) {
-            return prevTabIndex;
-          }
-          return currentTabfromUrlQuery;
-        });
-      }
-    };
-
-    const unlisten = history.listen((location) => {
-      return onTabIdQueryChange(location);
-    });
-
-    return () => {
-      unlisten();
-    };
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [history, activeTabIdQuery]);
-
-  return [activeTabIndex, handleSetActiveTab] as const;
+ 
+  return [activeTabIndex, setActiveTabIndex] as const;
 };
+
+
