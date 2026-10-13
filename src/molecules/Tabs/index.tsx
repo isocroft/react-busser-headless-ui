@@ -302,21 +302,8 @@ export default Tabs;
 
 /**
  * @example:
- * 
- * import { useEffect } from "react";
- * import { useIsFirstRender } from "react-busser";
- * 
- * const isFirstRender = useIsFirstRender();
- * const [ activate, id, tabIndex ] = useTabs("group_settings_tab", 1);
  *
- * 
- * useEffect(() => {
- *  if (isFirstRender) {
- *    // programmatically reset to the active tab to the first tab
- *    activate(0);
- *  }
- * }, []);
- * 
+ * const [ activate, id, tabIndex ] = useTabs("group_settings_tab", 1);
  * 
  * <Tabs activeTabIndex={tabIndex} activeTabIdQuery={id}>
  *   <Tabs.Header>
