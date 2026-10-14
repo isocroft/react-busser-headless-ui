@@ -43,6 +43,26 @@ const BASE_CSS = `
   left: auto;
   right: 0;
 }
+
+@media screen and (max-width: 560px) {
+  .data-box-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--data-box-table-cell-color);
+    font-size: 0.85rem;
+  }
+  
+  .data-box-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .data-box-table td:first-child,
+  .data-box-table th {
+    display: none;
+  }
+}
 `;
 
 /*
@@ -66,6 +86,7 @@ const BASE_CSS = `
  * - var(--data-box-table-row-border)
  * - var(--data-box-table-row-gap)
  * - var(--data-box-table-label-weight)
+ * - var(--data-box-table-cell-color)
  */
 const stackedRules = (scope: string) => {
   /** Expand `<scope> > (tbody|tfoot) > tr <tail>` without relying on :is(). */
