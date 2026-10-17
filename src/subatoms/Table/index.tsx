@@ -9,7 +9,7 @@ import { composeClassesModule } from "../../_shared/helpers";
 import { useIsomorphicLayoutEffect, useMergedRef, useSharedStyle } from "../../_shared/hooks";
 
 
-const STYLE_ID_PREFIX = "react-busser-headless-ui_table";
+const STYLESHEET_ID = "react-busser-headless-ui_table";
 
 /**
  * @INFO:
@@ -277,13 +277,13 @@ const TableRoot = forwardRef<HTMLTableElement, TableProps>(function Table(
   const tableRef = useRef<HTMLTableElement>(null);
   const ref = useMergedRef(tableRef, forwardedRef);
 
-  useSharedStyle(STYLE_ID_PREFIX, BASE_CSS);
+  useSharedStyle(STYLESHEET_ID, BASE_CSS);
   const breakpoint =
     typeof stackBelow === "number" && stackBelow > 0
       ? Math.round(stackBelow)
       : 0;
   useSharedStyle(
-    breakpoint ? `${STYLE_ID_PREFIX}-${breakpoint}` : `${STYLE_ID_PREFIX}-none`,
+    breakpoint ? `${STYLESHEET_ID}-${breakpoint}` : `${STYLESHEET_ID}-none`,
     breakpoint ? stackedCss(breakpoint) : ""
   );
 
