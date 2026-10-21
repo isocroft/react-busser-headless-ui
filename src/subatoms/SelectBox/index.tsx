@@ -1,70 +1,12 @@
-import React, { useRef, useCallback, useMemo, useEffect } from "react";
-//import { useEffectMemo } from "react-busser";
+import React, { useRef, useCallback, useEffect } from "react";
+import { useEffectMemo } from "react-busser";
+
+import { useGenericId, useSharedStyle } from "../../_shared/hooks";
 
 import type { Ref, ComponentPropsWithRef, ComponentProps } from "react";
 
-type EffectMemoCallbackArgs<DepsType = unknown[]> = {
-  dependencies: DepsType;
-  changed: Partial<DepsType> | [];
-};
 
 import { ChevronIcon } from "./assets/ChevronIcon";
-
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
-
-export const useEffectMemo = <Z extends Array<unknown>, V = unknown>(
-  callback: (options: EffectMemoCallbackArgs<Z>) => V,
-  deps: Z
-) => {
-  const safeDeps = (Array.isArray(deps) ? deps : []) as Z;
-  const memoRef = useRef<ReturnType<typeof callback> | null>(
-    typeof callback === "function"
-      ? callback({ dependencies: safeDeps, changed: [] })
-      : null
-  );
-
-  const depsRef = useRef<string[]>(
-    safeDeps.map((dep) =>
-      typeof dep === "object" ? JSON.stringify(dep) : String(dep || "")
-    )
-  );
-
-  useEffect(() => {
-    const depsIndexMap: Record<number, Z[number]> = {};
-    const newlyChangedDeps = safeDeps.filter((dep, index) => {
-      const status = dep !== depsRef.current[index];
-      if (status) {
-        depsIndexMap[index] = dep;
-      }
-      return status;
-    }) as Partial<Z>;
-
-    if (newlyChangedDeps.length > 0) {
-      depsRef.current = safeDeps.map((dep, index) => {
-        if (depsIndexMap[index]) {
-          return String(depsIndexMap[index] || "");
-        }
-        return String(dep || "");
-      });
-
-      memoRef.current =
-        typeof callback === "function"
-          ? callback({ dependencies: safeDeps, changed: newlyChangedDeps })
-          : null;
-    }
-  });
-
-  return useMemo<ReturnType<typeof callback> | null>(() => memoRef.current, []) as ReturnType<typeof callback>;
-};
 
 const SBox = React.forwardRef(
   (
@@ -92,37 +34,150 @@ const SBox = React.forwardRef(
     },
     ref: Ref<HTMLSelectElement>
   ) => {
+    const STYLESHEET_ID = "react-busser-headless-ui_select";
+    const BASE_CSS = `
+        span[data-select-wrapper] select {
+            white-space: nowrap;
+            position: relative;
+            display: block;
+            transform: rotate(0);
+            opacity: 0;
+            margin: 0;
+            min-width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        
+        span[data-select-wrapper] select:focus,
+        span[data-select-wrapper] select:focus-visible {
+            cursor: pointer;
+        }
+        
+        span[data-select-wrapper] {
+            white-space: nowrap;
+            vertical-align: middle;
+            display: inline-flex;
+            cursor: pointer;
+            position: relative;
+            min-height: 0;
+            height: auto;
+            max-width: 100%;
+            padding: 0;
+        }
+        
+        span[data-select-wrapper].fill_available {
+            min-width: 100%;
+        }
+        
+        span[data-select-wrapper] svg {
+            display: inline-block;
+            position: absolute;
+            z-index: 10;
+            pointer-events: none;
+            top: 0;
+            right: 0;
+            padding-right: 0;
+            background-color: transparent;
+        }
+        
+        span[data-select-wrapper]::before {
+            content: attr(data-selected-value);
+        }
+
+        span[data-select-wrapper]::after {
+            content: attr(data-placeholder);
+        }
+        
+        html span[data-select-wrapper][data-selected-value=""]::before {
+            display: none;
+        }
+        
+        html span[data-select-wrapper].hide-placeholder::after {
+            display: none;
+        }
+      `;
+    
     const multiple = (props.multiple || false) as boolean;
-    const anyValue = (defaultValue ? defaultValue : props.value) as string;
-    const contentWidthOffset =
-      useEffectMemo(
-        () => (multiple ? 0 : chevronSize + Math.floor(chevronSize / 2)),
-        [chevronSize, multiple]
-      ) || 0;
-    const cssDynamicStyleAttrSelector = useRef<string>(
-      ((Math.random() / 0.95 + 1) * new Date().getTime())
-        .toString(32)
-        .replace(/([.\d])+/g, "")
-    ).current;
+    const cssDynamicStyleAttrSelector = useGenericId();
     const selectRef = useRef<HTMLSelectElement | null>(null);
     const spanRef = useRef<HTMLSpanElement | null>(null);
     const prevRuleSet = useRef<string>("");
+    const contentWidthOffset = useEffectMemo(
+        () => (multiple ? 0 : chevronSize + Math.floor(chevronSize / 2)),
+        [chevronSize, multiple]
+      ) || 0;
+
+    const MIRROR_STYLESHEET_ID = `react-busser-headless-ui_select-mirror-${cssDynamicStyleAttrSelector}`;
+    const DYN_STYLESHEET_ID = `react-busser-headless-ui_select-dyn-${cssDynamicStyleAttrSelector}`;
+    const MIRROR_BASE_CSS = `
+        span[data-select-wrapper] {
+            border: 1px solid transparent;
+            color: inherit;
+            background-color: transparent;
+        }
+      `;
+    const DYN_BASE_CSS = `
+        span[data-select-wrapper][data-dyn-style-name="styl-${cssDynamicStyleAttrSelector}"]::before,
+        span[data-select-wrapper][data-dyn-style-name="styl-${cssDynamicStyleAttrSelector}"]::after {
+            -webkit-align-self: center;
+            align-self: center;
+            background-color: transparent;
+            overflow: hidden;
+            text-indent: ${placeholderTextIndent}px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            pointer-events: none;
+            width: -moz-calc(100% - ${contentWidthOffset}px);
+            width: -webkit-calc(100% - ${contentWidthOffset}px);
+            width: calc(100% - ${contentWidthOffset}px);
+            min-height: 0;
+            position: absolute;
+        }
+
+        span[data-select-wrapper][data-dyn-style-name="styl-${cssDynamicStyleAttrSelector}"] select {
+          opacity: ${multiple ? "1" : "0"};
+          -webkit-appearance: ${multiple ? "none" : "menulist"};
+          -moz-appearance: ${multiple ? "none" : "menulist"};
+          appearance: ${multiple ? "none" : "auto"};
+          ${multiple ? "border: none;" : ""}
+        }
+
+        ${
+          multiple
+            ? `html span[data-select-wrapper][data-dyn-style-name="styl-${cssDynamicStyleAttrSelector}"]::before,
+              html span[data-select-wrapper][data-dyn-style-name="styl-${cssDynamicStyleAttrSelector}"]::after {
+                display: none;
+              }`
+            : ""
+        }
+      `;
+    const anyValue = (defaultValue ? defaultValue : props.value) as string;
 
     const styleProp = useEffectMemo(() => props.style, [props.style]);
-
-    const $ref = useCallback((node) => {
+    const $ref = useCallback((node: HTMLSelectElement) => {
       if (node) {
         selectRef.current = node;
       } else {
         selectRef.current = null;
       }
-      return typeof ref === "function" ? ref(node) : ref;
+      
+      if (typeof ref === "function") {
+        ref(node)
+      }
+
+      if (ref !== null
+        && ref instanceof Object
+          && 'current' in ref) {
+        ref.current = node;
+      }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
     }, []);
 
     useEffect(() => {
-      if (!valueSync || selectRef.current === null /*|| anyValue === ""*/) {
+      if (!valueSync || selectRef.current === null) {
         return;
       }
+
       /* @NOTE: Programmatically trigger a `change` event on a <select> tag */
       /* @CHECK: https://github.com/facebook/react/issues/19678#issuecomment-679044981 */
       const selectOptions = Array.from(selectRef.current.options);
@@ -141,21 +196,26 @@ const SBox = React.forwardRef(
       )!.set;
 
       if (typeof setSelectTagIndex !== "undefined") {
-        setSelectTagIndex.call(
-          selectRef.current,
-          selectTagIndexMap[anyValue.toLowerCase()]
-        );
-        selectRef.current.dispatchEvent(programmaticChangeEvent);
+        if (typeof anyValue !== "undefined") {
+          setSelectTagIndex.call(
+            selectRef.current,
+            selectTagIndexMap[anyValue.toLowerCase()]
+          );
+          selectRef.current.dispatchEvent(programmaticChangeEvent);
+        } else {
+          throw new Error(
+            "SelectBox: `defaultValue` or `value` prop not supplied"
+          );
+        }
       }
-      /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    }, [valueSync, anyValue]);
+    }, [valueSync, anyValue, props.disabled]);
 
     useEffect(() => {
       if (spanRef.current === null || selectRef.current === null) {
         return;
       }
 
-      const onChangeDetected = (event: Event) => {
+      const onChangeDetected = (event: Event | { target: HTMLElement }) => {
         const selectElem = event.target as HTMLSelectElement;
         const spanElem = selectElem.parentNode! as HTMLSpanElement;
         const selectOptions = Array.from(selectElem.options);
@@ -171,194 +231,44 @@ const SBox = React.forwardRef(
         if (selectedIndex !== -1) {
           spanElem.setAttribute(
             "data-selected-value",
-            selectOptions[selectedIndex].text
+            selectOptions[selectedIndex]!.text
           );
 
-          if (!spanElem.classList.contains("hide-placeholder")) {
-            spanElem.classList.add("hide-placeholder");
+          const hasHidePlaceholder = spanElem.hasAttribute("data-title-visibility")
+          ? spanElem.getAttribute("data-title-visibility")
+          : "";
+
+          if (!hasHidePlaceholder) {
+            spanElem.setAttribute("data-title-visibility", "hide-placeholder");
             spanElem.setAttribute("title", "");
           }
         }
       };
 
       selectRef.current.addEventListener("input", onChangeDetected, false);
+
       if (valueSync) {
-        selectRef.current.dispatchEvent(new Event("input"));
+        selectRef.current.dispatchEvent(new CustomEvent("input"));
+      } else {
+        onChangeDetected({ target: selectRef.current });
       }
 
       return () => {
-        selectRef.current!.removeEventListener(
-          "input",
-          onChangeDetected,
-          false
-        );
+        if (selectRef.current) {
+          selectRef.current.removeEventListener(
+            "input",
+            onChangeDetected,
+            false
+          );
+        }
       };
     }, [valueSync, anyValue]);
 
-    useEffect(() => {
-      const styleSheetsOnly = [].slice
-        .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-        .filter((sheet) => {
-          if (sheet.ownerNode) {
-            return sheet.ownerNode.nodeName === "STYLE";
-          }
-          return false;
-        })
-        .map((sheet) => {
-          if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-            return sheet.ownerNode.id;
-          }
-          return "";
-        })
-        .filter((id) => id !== "");
+    useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
-      if (
-        styleSheetsOnly.length > 0 &&
-        /* @ts-ignore */
-        styleSheetsOnly.includes("react-busser-headless-ui_select")
-      ) {
-        return;
-      }
+    useSharedStyle(MIRROR_STYLESHEET_ID, MIRROR_BASE_CSS);
 
-      const selectStyle = window.document.createElement("style");
-
-      selectStyle.id = "react-busser-headless-ui_select";
-      selectStyle.innerHTML = `
-        span[id="select_wrapper"] select {
-            white-space: nowrap;
-            position: relative;
-            display: block;
-            transform: rotate(0);
-            opacity: 0;
-            margin: 0;
-            min-width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-        }
-        
-        span[id="select_wrapper"] select:focus,
-        span[id="select_wrapper"] select:focus-visible {
-            cursor: pointer;
-        }
-        
-        span[id="select_wrapper"] {
-            white-space: nowrap;
-            vertical-align: middle;
-            display: inline-flex;
-            cursor: pointer;
-            position: relative;
-            min-height: 0;
-            height: auto;
-            max-width: 100%;
-            padding: 0;
-        }
-        
-        span[id="select_wrapper"].fill_available {
-            min-width: 100%;
-        }
-        
-        span[id="select_wrapper"] svg {
-            display: inline-block;
-            position: absolute;
-            z-index: 10;
-            pointer-events: none;
-            top: 0;
-            right: 0;
-            padding-right: 0;
-            background-color: transparent;
-        }
-        
-        span[id="select_wrapper"]::before {
-            content: attr(data-selected-value);
-        }
-
-        span[id="select_wrapper"]::after {
-            content: attr(data-placeholder);
-        }
-        
-        html span[id="select_wrapper"][data-selected-value=""]::before {
-            display: none;
-        }
-        
-        html span[id="select_wrapper"].hide-placeholder::after {
-            display: none;
-        }
-      `;
-
-      window.document.head.appendChild(selectStyle);
-
-      return () => {
-        window.document.head.removeChild(selectStyle);
-      };
-    }, []);
-
-    useEffect(() => {
-      const selectMirrorStyle = window.document.createElement("style");
-
-      selectMirrorStyle.id = `react-busser-headless-ui_select-mirror-${cssDynamicStyleAttrSelector}`;
-      selectMirrorStyle.innerHTML = `
-        span#select_wrapper {
-            border: 1px solid transparent;
-            color: inherit;
-            background-color: transparent;
-        }
-      `;
-      window.document.head.appendChild(selectMirrorStyle);
-
-      return () => {
-        window.document.head.removeChild(selectMirrorStyle);
-      };
-    }, [cssDynamicStyleAttrSelector]);
-
-    useEffect(() => {
-      const selectDynStyle = window.document.createElement("style");
-      selectDynStyle.id = `react-busser-headless-ui_select-dyn-${cssDynamicStyleAttrSelector}`;
-      selectDynStyle.innerHTML = `
-        span#select_wrapper[data-dyn-style-name="styl-${cssDynamicStyleAttrSelector}"]::before,
-        span#select_wrapper[data-dyn-style-name="styl-${cssDynamicStyleAttrSelector}"]::after {
-            -webkit-align-self: center;
-            align-self: center;
-            background-color: transparent;
-            overflow: hidden;
-            text-indent: ${placeholderTextIndent}px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            pointer-events: none;
-            width: -moz-calc(100% - ${contentWidthOffset}px);
-            width: -webkit-calc(100% - ${contentWidthOffset}px);
-            width: calc(100% - ${contentWidthOffset}px);
-            min-height: 0;
-            position: absolute;
-        }
-
-        span#select_wrapper[data-dyn-style-name="styl-${cssDynamicStyleAttrSelector}"] select {
-          opacity: ${multiple ? "1" : "0"};
-          -webkit-appearance: ${multiple ? "none" : "menulist"};
-          -moz-appearance: ${multiple ? "none" : "menulist"};
-          appearance: ${multiple ? "none" : "auto"};
-          ${multiple ? "border: none;" : ""}
-        }
-
-        ${
-          multiple
-            ? `html span#select_wrapper[data-dyn-style-name="styl-${cssDynamicStyleAttrSelector}"]::before,
-              html span#select_wrapper[data-dyn-style-name="styl-${cssDynamicStyleAttrSelector}"]::after {
-                display: none;
-              }`
-            : ""
-        }
-      `;
-      window.document.head.appendChild(selectDynStyle);
-
-      return () => {
-        window.document.head.removeChild(selectDynStyle);
-      };
-    }, [
-      placeholderTextIndent,
-      cssDynamicStyleAttrSelector,
-      contentWidthOffset,
-      multiple,
-    ]);
+    useSharedStyle(DYN_STYLESHEET_ID, DYN_BASE_CSS);
 
     useEffect(() => {
       if (selectRef.current === null) {
@@ -366,7 +276,7 @@ const SBox = React.forwardRef(
       }
 
       const mirrorStyle = document.getElementById(
-        `react-busser-headless-ui_select-mirror-${cssDynamicStyleAttrSelector}`
+        MIRROR_STYLESHEET_ID
       )! as HTMLStyleElement;
       const mirrorStyleSheet = mirrorStyle.sheet!;
       const styleDeclaration = window.getComputedStyle(selectRef.current);
@@ -421,7 +331,7 @@ const SBox = React.forwardRef(
 
     return (
       <span
-        id="select_wrapper"
+        data-select_wrapper={""}
         ref={spanRef}
         className={`${wrapperClassName} ${
           widthFillAvailable ? "fill_available" : ""
@@ -440,7 +350,7 @@ const SBox = React.forwardRef(
           }
           ref={$ref}
         >
-          {hasChildren(children, 0) ? null : children}
+          {children}
         </select>
         <ChevronIcon
           iconSize={multiple ? 0 : chevronSize}
@@ -472,7 +382,7 @@ const OptionGroup = ({
 
 const SelectBox = Object.assign(SBox, { Option, OptionGroup });
 
-type SelectBoxProps = React.ComponentProps<typeof SelectBox>;
+type SelectBoxProps = ComponentProps<typeof SelectBox>;
 
 export type { SelectBoxProps };
 
