@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
 
+import { useSharedStyle } from "../../_shared/hooks";
+
+import type { ComponentPropsWithRef } from "react";
+
 type OSMod = "ctrl" | "cmd" | ("mod" & {});
 type Mods =
   | OSMod
@@ -10,12 +14,7 @@ type Mods =
   | `${OSMod} + alt + shift`
   | `${OSMod} + alt`;
 
-function KeyShortcut({
-  children,
-  modifier = "mod",
-  symbol,
-  ...props
-}: React.ComponentPropsWithRef<"kbd"> & {
+type KeyShortcutProps = ComponentPropsWithRef<"kbd"> & {
   modifier?:
     | "mod"
     | "alt"
@@ -43,65 +42,39 @@ function KeyShortcut({
     | "b"
     | "q"
     | "g";
-}) {
-  useEffect(() => {
-    const styleSheetsOnly = [].slice
-      .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-      .filter((sheet) => {
-        if (sheet.ownerNode) {
-          return sheet.ownerNode.nodeName === "STYLE";
-        }
-        return false;
-      })
-      .map((sheet) => {
-        if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-          return sheet.ownerNode.id;
-        }
-        return "";
-      })
-      .filter((id) => id !== "");
+};
 
-    if (
-      styleSheetsOnly.length > 0 &&
-      /* @ts-ignore */
-      styleSheetsOnly.includes("react-busser-headless-ui_key-shortcut")
-    ) {
-      return;
+function KeyShortcut({
+  children,
+  modifier = "mod",
+  symbol,
+  ...props
+}: KeyShortcutProps) {
+  const STYLESHEET_ID = "react-busser-headless-ui_key-shortcut";
+  const BASE_CSS = `
+    kbd[data-hotkeys="shortcut"] {
+      position: relative;
     }
 
-    const keyShortcutStyle = window.document.createElement("style");
-    keyShortcutStyle.id = "react-busser-headless-ui_key-shortcut";
+    kbd[data-hotkeys="shortcut"] kbd.modifier_keys {
+      text-transform: capitalize;
+    }
 
-    keyShortcutStyle.innerHTML = `
-      kbd[data-hotkeys="shortcut"] {
-        position: relative;
-      }
-  
-      kbd[data-hotkeys="shortcut"] kbd.modifier_keys {
-        text-transform: capitalize;
-      }
-  
-      kbd[data-hotkeys="shortcut"] sub {
-        display: none;
-        position: absolute;
-        bottom: auto;
-        right: auto;
-        top: 100%;
-        left: 0;
-      } 
-      
-      kbd[data-hotkeys="shortcut"]:hover sub {
-        display: inline-block;
-        white-space: nowrap;
-      }
-    `;
-
-    window.document.head.appendChild(keyShortcutStyle);
-
-    return () => {
-      window.document.head.removeChild(keyShortcutStyle);
-    };
-  }, []);
+    kbd[data-hotkeys="shortcut"] sub {
+      display: none;
+      position: absolute;
+      bottom: auto;
+      right: auto;
+      top: 100%;
+      left: 0;
+    } 
+    
+    kbd[data-hotkeys="shortcut"]:hover sub {
+      display: inline-block;
+      white-space: nowrap;
+    }
+  `;
+  useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
   const [$modifier, setModifier] = useState<Mods>(modifier);
 
@@ -137,5 +110,7 @@ const DescText = ({
 };
 
 KeyShortcut.Summary = DescText;
+
+export type { KeyShortcutProps };
 
 export default KeyShortcut;
