@@ -7,7 +7,7 @@ import type { CurrentPageTriggerDetail } from "../helpers";
 
 import { IS_TEST_ENV, IS_DEV_ENV } from "../helpers";
 
-const canUseDOM =
+export const canUseDOM =
     typeof window !== "undefined" && typeof window.document !== "undefined";
 
 let styleUsage = null;
