@@ -3,28 +3,10 @@ import React, { useRef, useState } from "react";
 import InputBox from "../../subatoms/InputBox";
 import ClipboardButton from "../../atoms/ClipboardButton";
 
+import { hasChildren, isSubChild } from "../../_shared/helpers";
+
 import type { InputBoxProps } from "../../subatoms/InputBox";
 import type { ClipboardButtonProps } from "../../atoms/ClipboardButton";
-
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
-
-const isSubChild = <C extends React.ReactNode>(
-  child: C,
-  tag: string
-): child is C =>
-  React.isValidElement<C>(child) &&
-  (typeof child?.type === "function"
-    ? child?.type?.name === tag
-    : String(child?.type).includes(tag));
 
 const useCurrentValue = (defaultValue: string) => {
   const [value, setValue] = useState<string>(defaultValue);
@@ -106,7 +88,20 @@ const ClipDataBox = ({
   );
 };
 
+ClipDataBox.ClipInput = ClipBoardInput;
+ClipDataBox.ClipButton = ClipboardButton;
+
+type ClipDataBoxProps = React.ComponentProps<typeof ClipDataBox>;
+
+export type { ClipDataBoxProps };
+
+export default ClipDataBox;
+
 /*
+
+  @EXAMPLE:
+
+  
   import { Copy } from "lucide-react";
 
   <ClipDataBox defaultValue={"Hallo!"}>
@@ -117,12 +112,3 @@ const ClipDataBox = ({
   </ClipDataBox>
 
 */
-
-ClipDataBox.ClipInput = ClipBoardInput;
-ClipDataBox.ClipButton = ClipboardButton;
-
-type ClipDataBoxProps = React.ComponentProps<typeof ClipDataBox>;
-
-export type { ClipDataBoxProps };
-
-export default ClipDataBox;
