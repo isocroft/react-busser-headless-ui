@@ -1,5 +1,9 @@
-import React, { FC, useEffect } from "react";
+import React, { useEffect } from "react";
 import defaultImagePath from "./assets/svg/photo-holder.svg";
+
+import { useSharedStyle } from "../../_shared/hooks";
+
+import type { FC, ComponentPropsWithRef } from "react";
 
 export enum AvatarSizes {
   Tiny="tn",
@@ -9,7 +13,7 @@ export enum AvatarSizes {
   XtraLarge="xlg"
 }
 
-export interface AvatarProps extends React.ComponentPropsWithRef<"div"> {
+export interface AvatarProps extends ComponentPropsWithRef<"div"> {
   size?: AvatarSizes;
   wrapperClassName?: string;
   src?: string;
@@ -28,36 +32,8 @@ const Avatar: FC<AvatarProps> = ({
   letters = "",
   ...props
 }: AvatarProps) => {
-  useEffect(() => {  
-    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
-      window.document.styleSheets
-    ).filter(
-      (sheet) => {
-        if (sheet.ownerNode) {
-          return sheet.ownerNode.nodeName === "STYLE";
-        }
-        return false;
-    }).map(
-      (sheet) => {
-        if (sheet.ownerNode
-          && sheet.ownerNode instanceof Element) {
-          return sheet.ownerNode.id;
-        }
-        return "";
-    }).filter(
-      (id) => id !== ""
-    );
-
-    if (styleSheetsOnly.length > 0
-      /* @ts-ignore */
-      && styleSheetsOnly.includes("react-busser-headless-ui_avatar")) {
-      return;
-    }
-
-    const avatarStyle = window.document.createElement('style');
-    avatarStyle.id = "react-busser-headless-ui_avatar";
-
-    avatarStyle.innerHTML = `  
+  STYLESHEET_ID = "react-busser-headless-ui_avatar";
+  BASE_CSS = `  
       .avatar_wrapper-box {
         display: inline-block;
         overflow: hidden;
@@ -136,13 +112,8 @@ const Avatar: FC<AvatarProps> = ({
         width: 100px;
         height: 100px;
       }
-    `;  
-    window.document.head.appendChild(avatarStyle);  
- 
-    return () => {  
-      window.document.head.removeChild(avatarStyle);  
-    };  
-  }, []);
+  `;
+  useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
   const sizeMap = {
     "xlg": 100,
@@ -195,7 +166,13 @@ export const AvatarWidget = {
   }
 };
 
+export default Avatar;
+
 /*
+
+  @EXAMPLE:
+
+  
   <Avatar
     widgetSize={48}
     letters={"MN"}
@@ -203,6 +180,5 @@ export const AvatarWidget = {
     className={"..."}
     wrapperClassName={"..."}
   />
+  
 */
-
-export default Avatar;
