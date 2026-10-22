@@ -52,7 +52,34 @@ import Modal from "./organisms/Modal";
 /**---------------- HOOKS ---------------------**/
 import { useDataScopedPaginatorProps, useRenderScopedPaginatorProps } from "./atoms/Paginator/external";
 import { useTabs } from "./molecules/Tabs/external";
+//import { useDropZoneContext } from "./molecules/FileZoneBox";
 import { useModal } from "./organisms/Modal/external";
+
+/**---------------- EXTRAS ---------------------**/
+import { AvatarWidget, AvatarSizes } from "./subatoms/Avatar";
+import { RadioIconSizes } from "./subatoms/RadioBox";
+import { SwitchWidgetSizes } from "./atoms/SwitchBox";
+
+/**---------------- TYPES ----------------------**/
+import type { AvatarProps } from "./subatoms/Avatar";
+import type { ButtonProps } from "./subatoms/Button";
+import type { InputBoxProps } from "./subatoms/InputBox";
+import type { SelectBoxProps } from "./subatoms/SelectBox";
+import type { CheckBoxProps } from "./subatoms/CheckBox";
+import type { RadioBoxProps } from "./subatoms/RadioBox";
+import type { FormProps } from "./subatoms/Form";
+import type { FileBoxProps } from "./subatoms/FileBox";
+import type { TextBoxProps } from "./subatoms/TextBox";
+import type { KeyShortcutProps } from "./subatoms/Keyshorcut";
+import type { LinkProps } from "./subatoms/Link";
+import type { ListProps } from "./subatoms/List";
+
+import type { } from "./atoms/RadioBoxList";
+import type { } from "./atoms/CodeEntryBox";
+import type { SwitchBoxProps } from "./atoms/SwitchBox";
+
+import type { ClipDataBoxProps } from "./molecules/ClipDataBox";
+import type { FileZoneBoxProps } from "./molecules/FileZoneBox";
 
 export {
   Avatar,
@@ -98,6 +125,12 @@ export {
 
   useDataScopedPaginatorProps,
   useRenderScopedPaginatorProps,
+  //useDropZoneContext,
   useModal,
-  useTabs
+  useTabs,
+
+  AvatarWidget,
+  AvatarSizes,
+  RadioIconSizes,
+  SwitchWidgetSizes
 };
