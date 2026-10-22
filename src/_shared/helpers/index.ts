@@ -219,6 +219,33 @@ export const PAGINATOR_EVENTS = {
 } as const;
 
 /**
+ * toClassNameTokens:
+ *
+ *
+ *
+ *
+ *
+ * @param {=String} className 
+ * 
+ * @returns {Array.<String>}
+ */
+const toClassNameTokens = (className?: string): string[] => {
+  /* 
+    @HINT:
+
+    Splits a className string into unique tokens. `accordion_Open` is owned
+    by the accordion itself, so a consumer can never add or remove it.
+  */
+  return Array.from(
+    new Set(
+      (className || "")
+        .split(/\s+/)
+        .filter((token) => token !== "" && token !== TOGGLE_CLASSNAME)
+    )
+  );
+};
+
+/**
  * composeClassesModule:
  *
  *
