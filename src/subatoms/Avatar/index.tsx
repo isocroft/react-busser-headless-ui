@@ -5,13 +5,15 @@ import { useSharedStyle } from "../../_shared/hooks";
 
 import type { FC, ComponentPropsWithRef } from "react";
 
-export enum AvatarSizes {
-  Tiny="tn",
-  Small="sm",
-  Medium="md",
-  Large="lg",
-  XtraLarge="xlg"
-}
+export const AvatarSizes = {
+  Tiny: "tn",
+  Small: "sm",
+  Medium: "md",
+  Large: "lg",
+  XtraLarge: "xlg"
+} as const;
+
+export type AvatarSizes = typeof AvatarSizes[keyof typeof AvatarSizes];
 
 export interface AvatarProps extends ComponentPropsWithRef<"div"> {
   size?: AvatarSizes;
@@ -32,8 +34,8 @@ const Avatar: FC<AvatarProps> = ({
   letters = "",
   ...props
 }: AvatarProps) => {
-  STYLESHEET_ID = "react-busser-headless-ui_avatar";
-  BASE_CSS = `  
+  const STYLESHEET_ID = "react-busser-headless-ui_avatar";
+  const BASE_CSS = `  
       .avatar_wrapper-box {
         display: inline-block;
         overflow: hidden;
