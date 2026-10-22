@@ -1,8 +1,9 @@
-import React, { FC, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 
 import FileBox from "../../subatoms/FileBox";
 
+import type { FC } from "react";
 import type { FileBoxProps } from "../../subatoms/FileBox";
 
 const ContextFileBox: FC<
