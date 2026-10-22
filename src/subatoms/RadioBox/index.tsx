@@ -1,24 +1,18 @@
-import React, { FC, Ref, CSSProperties, useEffect } from "react";
+import React from "react";
 
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
+import { hasChildren } from "../../_shared/helpers";
+import { useSharedStyle } from "../../_shared/hooks";
+
+import type { FC, Ref, CSSProperties, ComponentPropsWithRef } from "react";
+
 
 import { CircleIcon } from "./assets/CircleIcon";
 
-const RadioIcon = {
-  Sizes: {
+const RadioIconSizes = {
     TINY: 14,
+    SMALL: 18,
     MID: 22,
     LARGE: 32
-  }
 };
 
 const RadioBox: FC<
@@ -32,7 +26,7 @@ const RadioBox: FC<
     radioIconSize?: number;
     radioIconStrokeColor?: string;
     ref?: Ref<HTMLInputElement>;
-  } & Omit<React.ComponentProps<"input">, "type" | "placeholder" | "ref">
+  } & Omit<ComponentPropsWithRef<"input">, "type" | "placeholder" | "ref">
 > = React.forwardRef(
   (
     {
@@ -54,35 +48,8 @@ const RadioBox: FC<
     },
     ref: Ref<HTMLInputElement>
   ) => {
-    useEffect(() => {
-      const styleSheetsOnly = [].slice
-        .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-        .filter((sheet) => {
-          if (sheet.ownerNode) {
-            return sheet.ownerNode.nodeName === "STYLE";
-          }
-          return false;
-        })
-        .map((sheet) => {
-          if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-            return sheet.ownerNode.id;
-          }
-          return "";
-        })
-        .filter((id) => id !== "");
-
-      if (
-        styleSheetsOnly.length > 0 &&
-        /* @ts-ignore */
-        styleSheetsOnly.includes("react-busser-headless-ui_radio")
-      ) {
-        return;
-      }
-
-      const radioStyle = window.document.createElement("style");
-      radioStyle.id = "react-busser-headless-ui_radio";
-
-      radioStyle.innerHTML = `
+    const STYLESHEET_ID = "react-busser-headless-ui_radio";
+    const BASE_CSS = `
       .radio_wrapper-box {
         position: static;
         display: inline-block; /* shrink-to-fit trigger */
@@ -120,11 +87,6 @@ const RadioBox: FC<
         display: block;
       }
 
-      /*.radio_hidden-input:checked + svg rect {
-        stroke: #888888;
-        fill: #22fe31;
-      }*/
-
       .radio_control-icon-box {
         min-height: 0;
         min-width: fit-content;
@@ -133,12 +95,7 @@ const RadioBox: FC<
         vertical-align: middle;
       }
     `;
-      window.document.head.appendChild(radioStyle);
-
-      return () => {
-        window.document.head.removeChild(radioStyle);
-      };
-    }, []);
+    useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
     return (
       <div className={wrapperClassName} style={wrapperStyle} tabIndex={tabIndex}>
@@ -202,8 +159,37 @@ const RadioBox: FC<
 
 type RadioBoxProps = React.ComponentProps<typeof RadioBox>;
 
-export { RadioIcon };
+export { RadioIconSizes };
 
 export type { RadioBoxProps };
 
 export default RadioBox;
+
+/*
+
+  @EXAMPLE:
+
+
+  import { useState } from 'react';
+
+  const [decoration, setDecoration] = useState('flat');
+
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setDecoration(event.target.value);
+  };
+
+  <RadioBox
+    id="decoration-flat"
+    name="decoration"
+    value="flat"
+    checked={decoration === 'flat'}
+    onChange={onChange}
+    wrapperClassName="picnic_option"
+    displayStyle="adjusted"
+    radioIconSize={RadioIconSizes.SMALL}
+    radioIconStrokeColor="cyan"
+  >
+    <span>Flat decoration</span>
+  </RadioBox>
+
+*/
