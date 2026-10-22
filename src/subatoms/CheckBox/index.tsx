@@ -1,15 +1,10 @@
-import React, { FC, Ref, CSSProperties, useEffect } from "react";
+import React from "react";
 
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
+import { hasChildren } from "../../_shared/helpers";
+import { useSharedStyle } from "../../_shared/hooks";
+
+import type { FC, Ref, ComponentPropsWithRef, CSSProperties } from "react";
+
 
 import { MarkIcon } from "./assets/MarkIcon";
 
@@ -23,7 +18,7 @@ const CheckBox: FC<
     checkIconSize?: number;
     checkIconFillColor?: string;
     ref?: Ref<HTMLInputElement>;
-  } & Omit<React.ComponentProps<"input">, "type" | "placeholder" | "ref">
+  } & Omit<ComponentPropsWithRef<"input">, "type" | "placeholder" | "ref">
 > = React.forwardRef(
   (
     {
@@ -42,35 +37,8 @@ const CheckBox: FC<
     },
     ref: Ref<HTMLInputElement>
   ) => {
-    useEffect(() => {
-      const styleSheetsOnly = [].slice
-        .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-        .filter((sheet) => {
-          if (sheet.ownerNode) {
-            return sheet.ownerNode.nodeName === "STYLE";
-          }
-          return false;
-        })
-        .map((sheet) => {
-          if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-            return sheet.ownerNode.id;
-          }
-          return "";
-        })
-        .filter((id) => id !== "");
-
-      if (
-        styleSheetsOnly.length > 0 &&
-        /* @ts-ignore */
-        styleSheetsOnly.includes("react-busser-headless-ui_check")
-      ) {
-        return;
-      }
-
-      const checkStyle = window.document.createElement("style");
-      checkStyle.id = "react-busser-headless-ui_check";
-
-      checkStyle.innerHTML = `
+    const STYLESHEET_ID = "react-busser-headless-ui_check";
+    const BASE_CSS = `
         .check_wrapper-box {
           position: static;
           display: inline-block; /* shrink-to-fit trigger */
@@ -124,13 +92,8 @@ const CheckBox: FC<
           vertical-align: middle;
         }
      `;
-      window.document.head.appendChild(checkStyle);
-
-      return () => {
-        window.document.head.removeChild(checkStyle);
-      };
-    }, []);
-
+    useSharedStyle(STYLESHEET_ID, BASE_CSS);
+    
     return (
       <>
         <div className={wrapperClassName} style={wrapperStyle} role="group">
@@ -169,7 +132,18 @@ const CheckBox: FC<
   }
 );
 
+
+type CheckBoxProps = React.ComponentProps<typeof CheckBox>;
+
+export type { CheckBoxProps };
+
+export default CheckBox;
+
 /*
+
+  @EXAMPLE:
+
+
   import React, { useState } from "react";
 
   const [toggle, setToggle] = useState(true);
@@ -183,11 +157,5 @@ const CheckBox: FC<
   }}>
     <span>Label:</span>
   </CheckBox>
+  
 */
-
-
-type CheckBoxProps = React.ComponentProps<typeof CheckBox>;
-
-export type { CheckBoxProps };
-
-export default CheckBox;
