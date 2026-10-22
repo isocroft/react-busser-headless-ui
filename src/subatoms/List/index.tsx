@@ -1,4 +1,4 @@
-import React, { Ref, useRef, useCallback, useEffect } from "react";
+import React, { useRef, useCallback, useEffect } from "react";
 
 import { hasChildren } from "../../_shared/helpers";
 
