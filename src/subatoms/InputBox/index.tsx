@@ -1,5 +1,5 @@
 import React, { useRef, useCallback, useEffect } from "react";
-import type { Ref } from "react";
+import type { ComponentPropsWithRef, Ref } from "react";
 
 const InputBox = React.forwardRef(
   (
@@ -9,11 +9,12 @@ const InputBox = React.forwardRef(
       tabIndex = 0,
       valueSync = false,
       ...props
-    }: React.ComponentProps<"input"> & { valueSync?: boolean },
+    }: ComponentPropsWithRef<"input"> & { valueSync?: boolean },
     ref: Ref<HTMLInputElement>
   ) => {
     const anyValue = (defaultValue ? defaultValue : props.value) as string;
     const inputBoxRef = useRef<HTMLInputElement | null>(null);
+    
     useEffect(() => {
       if (!valueSync || inputBoxRef.current === null || !anyValue) {
         return;
@@ -33,13 +34,23 @@ const InputBox = React.forwardRef(
       /* eslint-disable-next-line react-hooks/exhaustive-deps */
     }, [valueSync, anyValue]);
 
-    const $ref = useCallback((node) => {
+    const $ref = useCallback((node: HTMLInputElement) => {
       if (node) {
         inputBoxRef.current = node;
       } else {
         inputBoxRef.current = null;
       }
-      return typeof ref === "function" ? ref(node) : ref;
+      
+      if (typeof ref === "function") {
+        ref(node);
+      }
+  
+      if (ref !== null
+        && ref instanceof Object
+          && 'current' in ref) {
+        ref.current = node;
+      }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
     }, []);
 
     return (
@@ -61,3 +72,16 @@ type InputBoxProps = React.ComponentProps<typeof InputBox>;
 export type { InputBoxProps };
 
 export default InputBox;
+
+/*
+
+  @EXAMPLE:
+
+
+  <Input
+    type={"password"}
+    placeholder={"Enter password"}
+    valueSync={true}
+  />
+
+*/
