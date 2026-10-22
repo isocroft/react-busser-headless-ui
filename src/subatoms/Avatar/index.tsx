@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import defaultImagePath from "./assets/svg/photo-holder.svg";
 
 import { useSharedStyle } from "../../_shared/hooks";
