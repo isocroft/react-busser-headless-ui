@@ -1,6 +1,8 @@
-import React, { FC } from "react";
+import React from "react";
 
-const Link: FC<React.ComponentPropsWithRef<"a">> = ({
+import type { FC, ComponentPropsWithRef } from "react";
+
+const Link: FC<ComponentPropsWithRef<"a">> = ({
   id,
   tabIndex = 0,
   children,
