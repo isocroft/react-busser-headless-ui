@@ -7,7 +7,9 @@ import React, {
 } from "react";
 import { useDropzone } from "react-dropzone";
 
-import type { Ref, PropsWithChildren } from "react";
+import { useSharedStyle } from "../../_shared/hooks";
+
+import type { Ref, PropsWithChildren, ComponentPropsWithoutRef } from "react";
 import type {
   FileWithPath,
   FileRejection,
@@ -158,6 +160,15 @@ export const useDropZoneContext = () => {
   return context;
 };
 
+const STYLESHEET_ID = "react-busser-headless-ui_filezone";
+const BASE_CSS = `
+  .file-input_tag {
+    opacity: 0;
+    font-size: 0;
+    width: 0;
+    height: 0;
+  }
+`;
 const DragDropInputPanel = React.forwardRef(
   (
     {
@@ -170,11 +181,11 @@ const DragDropInputPanel = React.forwardRef(
       id,
       ...props
     }: Omit<
-      React.ComponentPropsWithoutRef<"div">,
+      ComponentPropsWithoutRef<"div">,
       "onClick" | "onBlur" | "onFocus"
     > &
       Pick<
-        React.ComponentPropsWithoutRef<"input">,
+        ComponentPropsWithoutRef<"input">,
         "required" | "name" | "onChange" | "onBlur" | "onFocus"
       >,
     ref: Ref<HTMLInputElement>
@@ -192,48 +203,7 @@ const DragDropInputPanel = React.forwardRef(
       return typeof ref === "function" ? ref(node) : ref;
     }, []);
 
-    useEffect(() => {
-      const styleSheetsOnly = [].slice
-        .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-        .filter((sheet) => {
-          if (sheet.ownerNode) {
-            return sheet.ownerNode.nodeName === "STYLE";
-          }
-          return false;
-        })
-        .map((sheet) => {
-          if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-            return sheet.ownerNode.id;
-          }
-          return "";
-        })
-        .filter((id) => id !== "");
-
-      if (
-        styleSheetsOnly.length > 0 &&
-        /* @ts-ignore */
-        styleSheetsOnly.includes("react-busser-headless-ui_filezone")
-      ) {
-        return;
-      }
-
-      const fileZoneStyle = window.document.createElement("style");
-      fileZoneStyle.id = "react-busser-headless-ui_filezone";
-
-      fileZoneStyle.innerHTML = `
-      .file-input_tag {
-        opacity: 0;
-        font-size: 0;
-        width: 0;
-        height: 0;
-      }
-    `;
-      window.document.head.appendChild(fileZoneStyle);
-
-      return () => {
-        window.document.head.removeChild(fileZoneStyle);
-      };
-    }, []);
+    useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
     useEffect(() => {
       const onFileZoneDropAction = (
@@ -452,7 +422,17 @@ const FileZoneBox = ({
 FileZoneBox.DragnDropInput = DragDropInputPanel;
 FileZoneBox.DialogButton = FileDialogButton;
 
+type FileZoneBoxProps = React.ComponentProps<typeof FileZoneBox>;
+
+export type { FileZoneBoxProps };
+
+export default FileZoneBox;
+
 /* 
+
+@EXAMPLE:
+
+
 import React, { useState } from "react";
 
 const [aFile, setAFile] = useState<File | null>(null);
@@ -513,10 +493,5 @@ function FilesPreviewList() {
 </FileZoneBox>
 
 {aFile ? aFile.name : "No File"}
+
 */
-
-type FileZoneBoxProps = React.ComponentProps<typeof FileZoneBox>;
-
-export type { FileZoneBoxProps };
-
-export default FileZoneBox;
