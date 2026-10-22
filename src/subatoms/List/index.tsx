@@ -1,20 +1,13 @@
 import React, { Ref, useRef, useCallback, useEffect } from "react";
 
+import { hasChildren } from "../../_shared/helpers";
+
+import type { Ref } from "react";
+
 type CustomElementTagPropsWithRef<T extends React.ElementType> =
   React.ComponentProps<T> & {
     as?: T;
   };
-
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
 
 const $List = <D extends string | Record<string, string | number | object>>(
   {
