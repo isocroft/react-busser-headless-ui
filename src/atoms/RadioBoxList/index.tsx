@@ -1,29 +1,14 @@
-import React, { FC, CSSProperties, useRef, useCallback, useEffect } from "react";
+import React, { useRef, useCallback, useEffect } from "react";
+
+import { hasChildren, isSubChild } from "../../_shared/helpers";
+import { useSharedStyle } from "../../_shared/hooks";
+
+import type { FC, CSSProperties, ComponentPropsWithRef } from "react";
 
 import { CircleIcon } from "../../subatoms/RadioBox/assets/CircleIcon";
 
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
-
-const isSubChild = <C extends React.ReactNode>(
-  child: C,
-  tag: string
-): child is C =>
-  React.isValidElement<C>(child) &&
-  (typeof child?.type === "function"
-    ? child?.type?.name === tag
-    : String(child?.type).includes(tag));
-
 type CustomElementTagProps<T extends React.ElementType> =
-  React.ComponentPropsWithRef<T> & {
+  ComponentPropsWithRef<T> & {
     as?: T;
   };
 
@@ -168,6 +153,11 @@ const RadioBoxList = <L extends { text: string; value: string }>({
 } & CustomElementTagProps<"div" | "section"> &
   Omit<React.ComponentProps<"div">, "align">) => {
   const radioValue = useRef<string>(radioDefaultValue);
+
+  const STYLESHEET_ID = "";
+  const BASE_CSS = `
+  `;
+  useSharedStyle(STYLESHEET_ID, BASE_CSS);
   useEffect(() => {
     const styleSheetsOnly = [].slice
       .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
@@ -351,24 +341,26 @@ const RadioBoxList = <L extends { text: string; value: string }>({
 
 /*
 
+@EXAMPLE:
+
+import { useState } from "react";
 const [radioValue, setRadioValue] = useState("male");
 
 <RadioBoxList
-  as="section"
-  name="gender"
-  id="gender"
-  displayStyle="adjusted"
+  as={"section"}
+  name={"gender"}
+  id={"gender"}
+  displayStyle={"adjusted"}
   radioDefaultValue={"male"}
   onChange={(event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
-    console.log('current value: ', event.currentValue);
     setRadioValue(event.currentValue);
   }}
-  radioIconSize={RadioIcon.IconSizes.BIG}
+  radioIconSize={RadioIconSizes.BIG}
 >
-  <RadioBoxList.Option value="male" id="male">
+  <RadioBoxList.Option value={"male"} id={"male"}>
     <span>Male</span>
   </RadioBoxList.Option>
-  <RadioBoxList.Option value="female" id="female">
+  <RadioBoxList.Option value={"female"} id={"female"}>
     <span>Female</span>
   </RadioBoxList.Option>
 </RadioBoxList>
@@ -376,14 +368,6 @@ const [radioValue, setRadioValue] = useState("male");
 */
 
 RadioBoxList.Option = Option;
-
-export const RadioIcon = {
-  IconSizes: {
-    TINY: 16,
-    MID: 22,
-    BIG: 24,
-  },
-};
 
 type RadioBoxListProps = React.ComponentProps<typeof RadioBoxList>;
 
