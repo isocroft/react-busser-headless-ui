@@ -74,7 +74,8 @@ import type { KeyShortcutProps } from "./subatoms/Keyshorcut";
 import type { LinkProps } from "./subatoms/Link";
 import type { ListProps } from "./subatoms/List";
 
-import type { } from "./atoms/RadioBoxList";
+import type { RadioBoxListProps } from "./atoms/RadioBoxList";
+import type { PaginatorProps } from "./atoms/Paginator";
 import type { } from "./atoms/CodeEntryBox";
 import type { SwitchBoxProps } from "./atoms/SwitchBox";
 
