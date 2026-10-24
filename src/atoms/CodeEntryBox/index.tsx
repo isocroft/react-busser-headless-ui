@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import InputBox from "../../subatoms/InputBox";
 
-import type { FC } from "react";
-import type { InputBoxProps } from "../../subatoms/InputBox";
-
 import { useGenericId, useSharedStyle } from "../../_shared/hooks";
 import { hasChildren, isSubChild } from "../../_shared/helpers";
+
+import type { FC, ComponentPropsWithRef } from "react";
+import type { InputBoxProps } from "../../subatoms/InputBox";
 
 interface CompositionEvent<T = Element>
   extends React.SyntheticEvent<T, CompositionEvent> {
@@ -23,7 +23,6 @@ type OTPEntryBoxProps = {
   defaultValue?: string;
   disabled?: boolean;
   title?: string;
-  className?: string;
   wrapperClassName?: string;
   onChange?: (
     event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }
@@ -34,7 +33,7 @@ type OTPEntryBoxProps = {
 };
 
 type CustomElementTagProps<T extends React.ElementType> =
-  React.ComponentPropsWithRef<T> & {
+  ComponentPropsWithRef<T> & {
     as?: T;
   };
 
@@ -57,7 +56,7 @@ function ClonedFormInputElements({
   keyPrefix?: string;
   defaultValues?: string;
   elementProps?: Pick<
-    React.ComponentPropsWithRef<"input">,
+    ComponentPropsWithRef<"input">,
     | "type"
     | "inputMode"
     | "maxLength"
@@ -106,7 +105,6 @@ function ClonedFormInputElements({
         name: "",
         form: "none", // @HINT: Stop input from being submitted by any HTML form: `<input form="none" name="">`
         defaultValue: defaultValues.charAt(index) || dValue,
-        className,
         onChange,
         onPaste,
         onFocus,
@@ -132,7 +130,6 @@ const CodeEntryBox = ({
   slots = 4,
   required = false,
   disabled = false,
-  className = "",
   defaultValue = "",
   wrapperClassName = "",
   pasteTransformer = (pastedText: string) => pastedText,
@@ -165,7 +162,7 @@ const CodeEntryBox = ({
     inputMode,
   };
 
-  const cssText = `
+  const BASE_CSS = `
     [data-codeentrybox-root] [type="text"][data-codeentrybox-hidden] {
       font-size: 0;
       padding: 0;
@@ -234,7 +231,7 @@ const CodeEntryBox = ({
     return entryType === "numeric" ? NUMBER_REGEX : ALL_REGEX
   });
 
-  useSharedStyle(STYLESHEET_ID, cssText);
+  useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
   const focusNextInput = (
     index: number,
@@ -453,7 +450,6 @@ const CodeEntryBox = ({
         onKeyDown={handleOnInputKeyDown}
         onMouseUp={handleOnInputMouseUp}
         onBeforeInput={handleOnBeforeInputKeyDown}
-        className={className}
       >
         {children}
       </ClonedFormInputElements>
@@ -469,6 +465,8 @@ const CodeInput = ({
 
 CodeEntryBox.Input = CodeInput;
 
+export type { OTPEntryBoxProps };
+
 export default CodeEntryBox;
 
 /*
@@ -480,6 +478,6 @@ export default CodeEntryBox;
     console.log("hello! ", event.target.value);
   }}
 >
-  <CodeEntryBox.Input />
+  <CodeEntryBox.Input className={"digit-unit"} />
 </CodeEntryBox>
 */
