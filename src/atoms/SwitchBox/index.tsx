@@ -1,17 +1,11 @@
-import React, { Ref, CSSProperties, useEffect } from "react";
+import React, { useEffect } from "react";
+
+import { hasChildren } from "../../_shared/helpers";
+import { useSharedStyle, useGenericId } from "../../_shared/hooks";
+
+import type { Ref, CSSProperties, ComponentPropsWithRef } from "react";
 
 import { EllipseIcon } from "./assets/EllipseIcon";
-
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
 
 const SwitchBox = React.forwardRef(
   (
@@ -30,7 +24,7 @@ const SwitchBox = React.forwardRef(
       onChange,
       ...props
     }: Pick<
-      React.ComponentProps<"input">,
+      ComponentPropsWithRef<"input">,
       | "checked"
       | "disabled"
       | "required"
@@ -54,37 +48,11 @@ const SwitchBox = React.forwardRef(
     },
     ref: Ref<HTMLInputElement>
   ) => {
-    useEffect(() => {
-      const styleSheetsOnly = [].slice
-        .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-        .filter((sheet) => {
-          if (sheet.ownerNode) {
-            return sheet.ownerNode.nodeName === "STYLE";
-          }
-          return false;
-        })
-        .map((sheet) => {
-          if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-            return sheet.ownerNode.id;
-          }
-          return "";
-        })
-        .filter((id) => id !== "");
-
-      if (
-        styleSheetsOnly.length > 0 &&
-        /* @ts-ignore */
-        styleSheetsOnly.includes("react-busser-headless-ui_switch")
-      ) {
-        return;
-      }
-
-      const switchStyle = window.document.createElement("style");
-      switchStyle.id = "react-busser-headless-ui_switch";
-
-      switchStyle.innerHTML = `
+    const STYLESHEET_ID = "react-busser-headless-ui_switch";
+    const switchStyleId = useGenericId();
+    const BASE_CSS = `
       :root {
-        --switch-wrapper-box-font-size: 0.8em;
+        --switch-wrapper-box-${switchStyleId}-font-size: 0.8em;
       }
 
       .switch_wrapper-box  {
@@ -97,7 +65,7 @@ const SwitchBox = React.forwardRef(
         border-radius: 2rem;
         overflow: hidden;
         box-shadow: 0 1px 3px #0003 inset;
-        font-size: var(--switch-wrapper-box-font-size);
+        font-size: var(--switch-wrapper-box-${switchStyleId}-font-size);
       }
       
       .switch_wrapper-box svg {
@@ -118,7 +86,6 @@ const SwitchBox = React.forwardRef(
         -webkit-appearance: none;
         appearance: none;
         position: absolute;
-        /* transition: 0.25s linear background-color; */
         top: 0;
         left: 0;
         width: 100%;
@@ -132,31 +99,24 @@ const SwitchBox = React.forwardRef(
         display: inline-block;
         width: 45%;
         height: 75%;
+        -moz-border-radius: 1.2rem;
+        -webkit-border-radius: 1.2rem;
+        -khtml-border-radius: 1.2rem;
+        -o-border-radius: 1.2rem;
         border-radius: 1.2rem;
         position: absolute;
         top: 12.5%;
         left: 7%;
         right: auto;
+        -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         transition: 0.25s linear left;
       }
       
-      /*
-      .switch_wrapper-box input:checked {
-        background-color: green;
-      }
-      */
-      
       .switch_wrapper-box input:checked::before {
         left: 49%;
       }
-
-      /*
-      .switch_wrapper-box input:focus-visible {
-        outline: 2px solid dodgerblue;
-        outline-offset: 2px;
-      }
-      */
       
       .switch_wrapper-box span {
         display: flex;
@@ -205,12 +165,7 @@ const SwitchBox = React.forwardRef(
       }
       
     `;
-      window.document.head.appendChild(switchStyle);
-
-      return () => {
-        window.document.head.removeChild(switchStyle);
-      };
-    }, []);
+    useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
     useEffect(() => {
       const topRange = widgetSize * 2;
@@ -220,10 +175,10 @@ const SwitchBox = React.forwardRef(
       const factor = dimension <= 1.6 ? 3 : 2;
 
       document.documentElement.style.setProperty(
-        "--switch-wrapper-box-font-size",
+        `--switch-wrapper-box-${switchStyleId}-font-size`,
         (dimension / factor).toFixed(4) + "em"
       );
-    }, [widgetSize]);
+    }, [widgetSize, switchStyleId]);
 
     return (
       <div className={wrapperClassName} style={wrapperStyle} tabIndex={tabIndex}>
@@ -316,34 +271,12 @@ const SwitchBox = React.forwardRef(
   }
 );
 
-/*
-  import React, { useState } from "react";
 
-  const [switchStatus, setSwitcStatus] = useState(true);
-  const screenReaderText = "Tick-Tok!";
-
-  <SwitchBox
-        widgetSize={SwitchWidget.WidgetSizes.MID}
-        activeText={"On"}
-        checked={switchStatus}
-        inactiveText={"Off"}
-        labelPosition={"afterInput"}
-        labelClassName={"text-[#333344] ml-2"}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-          setSwitcStatus(e.target.checked);
-        }}
-    >
-      <span className="sr-only">{screenReaderText}</span>
-    </SwitchBox>
-*/
-
-export const SwitchWidget = {
-  WidgetSizes: {
-    TINY: 16,
-    MID: 22,
-    BIG: 24,
-    LARGE: 29,
-  },
+export const SwitchWidgetSizes = {
+  TINY: 16,
+  MID: 22,
+  BIG: 24,
+  LARGE: 29,
 };
 
 type SwitchBoxProps = React.ComponentProps<typeof SwitchBox>;
@@ -351,3 +284,28 @@ type SwitchBoxProps = React.ComponentProps<typeof SwitchBox>;
 export type { SwitchBoxProps };
 
 export default SwitchBox;
+
+/*
+
+  @EXAMPLE:
+
+
+  import React, { useState } from "react";
+
+  const [switchStatus, setSwitcStatus] = useState(true);
+  const screenReaderText = "Tick-Tok!";
+
+  <SwitchBox
+    widgetSize={SwitchWidgetSizes.MID}
+    activeText={"On"}
+    checked={switchStatus}
+    inactiveText={"Off"}
+    labelPosition={"afterInput"}
+    labelClassName={"text-[#333344] ml-2"}
+    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+      setSwitcStatus(e.target.checked);
+    }}
+  >
+    <span className="sr-only">{screenReaderText}</span>
+  </SwitchBox>
+*/
