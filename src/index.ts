@@ -60,7 +60,7 @@ import { AvatarWidget, AvatarSizes } from "./subatoms/Avatar";
 import { RadioIconSizes } from "./subatoms/RadioBox";
 import { SwitchWidgetSizes } from "./atoms/SwitchBox";
 
-/**---------------- TYPES ----------------------**/
+/**---------------- PROP TYPES ----------------------**/
 import type { AvatarProps } from "./subatoms/Avatar";
 import type { ButtonProps } from "./subatoms/Button";
 import type { InputBoxProps } from "./subatoms/InputBox";
@@ -76,7 +76,7 @@ import type { ListProps } from "./subatoms/List";
 
 import type { RadioBoxListProps } from "./atoms/RadioBoxList";
 import type { PaginatorProps } from "./atoms/Paginator";
-import type { } from "./atoms/CodeEntryBox";
+import type { OTPEntryBoxProps } from "./atoms/CodeEntryBox";
 import type { SwitchBoxProps } from "./atoms/SwitchBox";
 
 import type { ClipDataBoxProps } from "./molecules/ClipDataBox";
