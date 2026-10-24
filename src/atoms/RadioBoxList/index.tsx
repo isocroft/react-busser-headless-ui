@@ -154,39 +154,8 @@ const RadioBoxList = <L extends { text: string; value: string }>({
   Omit<React.ComponentProps<"div">, "align">) => {
   const radioValue = useRef<string>(radioDefaultValue);
 
-  const STYLESHEET_ID = "";
+  const STYLESHEET_ID = "react-busser-headless-ui_radio";
   const BASE_CSS = `
-  `;
-  useSharedStyle(STYLESHEET_ID, BASE_CSS);
-  useEffect(() => {
-    const styleSheetsOnly = [].slice
-      .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-      .filter((sheet) => {
-        if (sheet.ownerNode) {
-          return sheet.ownerNode.nodeName === "STYLE";
-        }
-        return false;
-      })
-      .map((sheet) => {
-        if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-          return sheet.ownerNode.id;
-        }
-        return "";
-      })
-      .filter((id) => id !== "");
-
-    if (
-      styleSheetsOnly.length > 0 &&
-      /* @ts-ignore */
-      styleSheetsOnly.includes("react-busser-headless-ui_radio")
-    ) {
-      return;
-    }
-
-    const radioStyle = window.document.createElement("style");
-    radioStyle.id = "react-busser-headless-ui_radio";
-
-    radioStyle.innerHTML = `
       .radio_wrapper-box {
         position: static;
         display: inline-block; /* shrink-to-fit trigger */
@@ -223,11 +192,6 @@ const RadioBoxList = <L extends { text: string; value: string }>({
         display: block;
       }
 
-      /*.radio_hidden-input:checked + svg rect {
-        stroke: #888888;
-        fill: #23ef4b;
-      }*/
-
       .radio_control-icon-box {
         min-height: 0;
         min-width: fit-content;
@@ -236,12 +200,7 @@ const RadioBoxList = <L extends { text: string; value: string }>({
         vertical-align: middle;
       }
     `;
-    window.document.head.appendChild(radioStyle);
-
-    return () => {
-      window.document.head.removeChild(radioStyle);
-    };
-  }, []);
+  useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
   const childrenProps = React.Children.map(children, (child) => {
     if (!React.isValidElement(child) || !isSubChild(child, "Option")) {
@@ -339,34 +298,6 @@ const RadioBoxList = <L extends { text: string; value: string }>({
   );
 };
 
-/*
-
-@EXAMPLE:
-
-import { useState } from "react";
-const [radioValue, setRadioValue] = useState("male");
-
-<RadioBoxList
-  as={"section"}
-  name={"gender"}
-  id={"gender"}
-  displayStyle={"adjusted"}
-  radioDefaultValue={"male"}
-  onChange={(event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
-    setRadioValue(event.currentValue);
-  }}
-  radioIconSize={RadioIconSizes.BIG}
->
-  <RadioBoxList.Option value={"male"} id={"male"}>
-    <span>Male</span>
-  </RadioBoxList.Option>
-  <RadioBoxList.Option value={"female"} id={"female"}>
-    <span>Female</span>
-  </RadioBoxList.Option>
-</RadioBoxList>
-
-*/
-
 RadioBoxList.Option = Option;
 
 type RadioBoxListProps = React.ComponentProps<typeof RadioBoxList>;
@@ -374,3 +305,31 @@ type RadioBoxListProps = React.ComponentProps<typeof RadioBoxList>;
 export type { RadioBoxListProps };
 
 export default RadioBoxList;
+
+/*
+
+  @EXAMPLE:
+  
+  import { useState } from "react";
+  const [radioValue, setRadioValue] = useState("male");
+  
+  <RadioBoxList
+    as={"section"}
+    name={"gender"}
+    id={"gender"}
+    displayStyle={"adjusted"}
+    radioDefaultValue={"male"}
+    onChange={(event: React.ChangeEvent<HTMLInputElement> & { target: HTMLInputElement }) => {
+      setRadioValue(event.currentValue);
+    }}
+    radioIconSize={RadioIconSizes.BIG}
+  >
+    <RadioBoxList.Option value={"male"} id={"male"}>
+      <span>Male</span>
+    </RadioBoxList.Option>
+    <RadioBoxList.Option value={"female"} id={"female"}>
+      <span>Female</span>
+    </RadioBoxList.Option>
+  </RadioBoxList>
+
+*/
