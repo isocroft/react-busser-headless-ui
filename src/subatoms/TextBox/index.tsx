@@ -1,20 +1,14 @@
-import React, { FC, Ref, CSSProperties, useRef, useCallback, useEffect } from "react";
+import React, { useRef, useCallback, useEffect } from "react";
+
+import { hasChildren } from "../../_shared/helpers";
+import { useSharedStyle } from "../../_shared/hooks";
+
+import type { FC, Ref, CSSProperties } from "react";
 
 type CustomElementTagProps<T extends React.ElementType> =
   React.ComponentProps<T> & {
     as?: T;
   };
-
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
 
 /* @ts-ignore */
 const TextBox: FC<
@@ -81,7 +75,7 @@ const TextBox: FC<
       wrapperClassName = "",
       labelPosition = "afterInput",
       labelClassName = "",
-      className,
+      className = "",
       wrapperStyle,
       defaultValue = "",
       valueSync = false,
@@ -94,35 +88,8 @@ const TextBox: FC<
     const textBoxRef = useRef<(HTMLInputElement & HTMLTextAreaElement) | null>(
       null
     );
-    useEffect(() => {
-      const styleSheetsOnly = [].slice
-        .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-        .filter((sheet) => {
-          if (sheet.ownerNode) {
-            return sheet.ownerNode.nodeName === "STYLE";
-          }
-          return false;
-        })
-        .map((sheet) => {
-          if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-            return sheet.ownerNode.id;
-          }
-          return "";
-        })
-        .filter((id) => id !== "");
-
-      if (
-        styleSheetsOnly.length > 0 &&
-        /* @ts-ignore */
-        styleSheetsOnly.includes("react-busser-headless-ui_text")
-      ) {
-        return;
-      }
-
-      const textStyle = window.document.createElement("style");
-      textStyle.id = "react-busser-headless-ui_text";
-
-      textStyle.innerHTML = `  
+    const STYLESHEET_ID = "react-busser-headless-ui_text";
+    const BASE_CSS = `  
       .text_wrapper-box {
         overflow: hidden;
       }
@@ -132,12 +99,7 @@ const TextBox: FC<
         display: block;
       }
     `;
-      window.document.head.appendChild(textStyle);
-
-      return () => {
-        window.document.head.removeChild(textStyle);
-      };
-    }, []);
+    useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
     useEffect(() => {
       if (!valueSync || textBoxRef.current === null || anyValue === "") {
@@ -167,13 +129,23 @@ const TextBox: FC<
       /* eslint-disable-next-line react-hooks/exhaustive-deps */
     }, [valueSync, anyValue]);
 
-    const $ref = useCallback((node) => {
+    const $ref = useCallback((node: HTMLInputElement) => {
       if (node) {
         textBoxRef.current = node;
       } else {
         textBoxRef.current = null;
       }
-      return typeof ref === "function" ? ref(node) : ref;
+      
+      if (typeof ref === "function") {
+        ref(node);
+      }
+  
+      if (ref !== null
+        && ref instanceof Object
+          && 'current' in ref) {
+        ref.current = node;
+      }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */
     }, []);
 
     return (
@@ -266,33 +238,36 @@ const TextBox: FC<
   }
 );
 
-/*
-import React, { useState } from "react";
-
-const [myText, setMyText] = useState<string>("");
-
-
-<TextBox
-  id="mytext"
-  name="mytext"
-  className=""
-  value={myText}
-  onChange={(
-    event: React.ChangeEvent<HTMLInputElement> & {
-      target: HTMLInputElement;
-    }
-  ) => {
-    setMyText(event.target.value);
-  }}
->
-  <span>My Text:</span>
-</TextBox>
-
-{myText ? myText : "..."}
-*/
-
 type TextBoxProps = React.ComponentProps<typeof TextBox>;
 
 export type { TextBoxProps };
 
 export default TextBox;
+
+/*
+
+  @EXAMPLE:
+  
+  import React, { useState } from "react";
+  const [myText, setMyText] = useState<string>("");
+  
+  
+  <TextBox
+    id="mytext"
+    name="mytext"
+    className=""
+    value={myText}
+    onChange={(
+      event: React.ChangeEvent<HTMLInputElement> & {
+        target: HTMLInputElement;
+      }
+    ) => {
+      setMyText(event.target.value);
+    }}
+  >
+    <span>My Text:</span>
+  </TextBox>
+
+  <p>{myText ? myText : "..."}</p>
+
+*/
