@@ -1,4 +1,9 @@
-import React, { FC, Ref, CSSProperties, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
+
+import { hasChildren } from "../../_shared/helpers";
+import { useGenericId, useSharedStyle } from "../../_shared/hooks";
+
+import type { FC, Ref, CSSProperties, ComponentPropsWithRef } from "react";
 
 declare module "react" {
   interface InputHTMLAttributes<T> extends React.HTMLAttributes<T> {
@@ -6,20 +11,9 @@ declare module "react" {
   }
 }
 
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
-
 const FileBox: FC<
   Pick<
-    React.ComponentProps<"input">,
+    ComponentPropsWithRef<"input">,
     | "accept"
     | "multiple"
     | "onChange"
@@ -64,38 +58,12 @@ const FileBox: FC<
   ) => {
     const wrapperDivRef = useRef<HTMLDivElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const fileStyledId = useGenericId();
 
-    useEffect(() => {
-      const styleSheetsOnly = [].slice
-        .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-        .filter((sheet) => {
-          if (sheet.ownerNode) {
-            return sheet.ownerNode.nodeName === "STYLE";
-          }
-          return false;
-        })
-        .map((sheet) => {
-          if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-            return sheet.ownerNode.id;
-          }
-          return "";
-        })
-        .filter((id) => id !== "");
-
-      if (
-        styleSheetsOnly.length > 0 &&
-        /* @ts-ignore */
-        styleSheetsOnly.includes("react-busser-headless-ui_file")
-      ) {
-        return;
-      }
-
-      const fileStyle = window.document.createElement("style");
-      fileStyle.id = "react-busser-headless-ui_file";
-
-      fileStyle.innerHTML = `
+    const STYLESHEET_ID = "react-busser-headless-ui_file";
+    const BASE_CSS = `
       :root {
-        --file-input-content-font-size: 1rem;
+        --file-input-content-${fileStyledId}-font-size: 1rem;
       }
       
       .file_wrapper-box {
@@ -140,23 +108,19 @@ const FileBox: FC<
 
       .file-updated-input::after {
         content: attr(data-prompt);
-        font-size: var(--file-input-content-font-size);
+        font-size: var(--file-input-content-${fileStyledId}-font-size);
         position: relative;
         z-index: 2;
         display: inline-block;
       }
       
     `;
-      window.document.head.appendChild(fileStyle);
-
-      return () => {
-        window.document.head.removeChild(fileStyle);
-      };
-    }, []);
+    
+    useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
     useEffect(() => {
       /* @NOTE: TypeScript has refused to make `CSSStyleDelcaration` a record-like type */
-      /* @HINT: So, i have to use an ignore flag for the TSC to use valid JavaScript syntax */
+      /* @HINT: So, I have to use an ignore flag for the TSC to use valid JavaScript syntax */
       /* @CHECK: https://github.com/Microsoft/TypeScript/issues/17827 */
       if (wrapperDivRef.current !== null && fileInputRef.current !== null) {
         const $style = window.getComputedStyle(wrapperDivRef.current);
@@ -164,7 +128,7 @@ const FileBox: FC<
         /* @ts-ignore */
         if (style["font-size"] !== $style["font-size"]) {
           document.documentElement.style.setProperty(
-            "--file-input-content-font-size",
+            `--file-input-content-${fileStyledId}-font-size`,
             /* @ts-ignore */
             parseInt(style["font-size"]) / 16 + "rem"
           );
@@ -220,60 +184,60 @@ const FileBox: FC<
               </label>
             )) ||
             null}
-        <input
-          id={id}
-          name={name}
-          type={"file"}
-          accept={accept}
-          title={
-            typeof prompt === "string" && prompt !== "" ? prompt : undefined
-          }
-          onChange={(
-            event: React.ChangeEvent<HTMLInputElement> & {
-              target: HTMLInputElement;
+          <input
+            id={id}
+            name={name}
+            type={"file"}
+            accept={accept}
+            title={
+              typeof prompt === "string" && prompt !== "" ? prompt : undefined
             }
-          ) => {
-            if (typeof prompt === "string" && prompt !== "") {
-              const files = (event.target.files || [null]) as FileList;
-              const firstFile = files[0];
-
-              if (firstFile) {
-                const fileLength = files.length;
-                if (fileInputRef.current !== null) {
-                  fileInputRef.current.dataset.prompt =
-                    fileLength === 1 ? firstFile.name : `${fileLength} files`;
-                  fileInputRef.current.setAttribute(
-                    "title",
-                    Array.from(files)
-                      .map((file) => file.name)
-                      .join("\r\n")
-                  );
-                }
-              } else {
-                if (fileInputRef.current !== null) {
-                  fileInputRef.current.dataset.prompt = prompt;
-                  fileInputRef.current.setAttribute("title", prompt);
+            onChange={(
+              event: React.ChangeEvent<HTMLInputElement> & {
+                target: HTMLInputElement;
+              }
+            ) => {
+              if (typeof prompt === "string" && prompt !== "") {
+                const files = (event.target.files || [null]) as FileList;
+                const firstFile = files[0];
+  
+                if (firstFile) {
+                  const fileLength = files.length;
+                  if (fileInputRef.current !== null) {
+                    fileInputRef.current.dataset.prompt =
+                      fileLength === 1 ? firstFile.name : `${fileLength} files`;
+                    fileInputRef.current.setAttribute(
+                      "title",
+                      Array.from(files)
+                        .map((file) => file.name)
+                        .join("\r\n")
+                    );
+                  }
+                } else {
+                  if (fileInputRef.current !== null) {
+                    fileInputRef.current.dataset.prompt = prompt;
+                    fileInputRef.current.setAttribute("title", prompt);
+                  }
                 }
               }
-            }
-            if (typeof onChange === "function") {
-              onChange(event);
-            }
-          }}
-          onBlur={onBlur}
-          data-prompt={prompt}
-          webkitdirectory={webkitdirectory ? "" : undefined}
-          multiple={multiple ? multiple : undefined}
-          className={`file-updated-input ${className}`}
-          ref={(node) => {
-            if (node) {
-              fileInputRef.current = node;
-            } else {
-              fileInputRef.current = null;
-            }
-            return typeof ref === "function" ? ref(node) : ref;
-          }}
-        />
+              if (typeof onChange === "function") {
+                onChange(event);
+              }
+            }}
+            onBlur={onBlur}
+            data-prompt={prompt}
+            webkitdirectory={webkitdirectory ? "" : undefined}
+            multiple={multiple ? multiple : undefined}
+            className={`file-updated-input ${className}`}
+            ref={(node) => {
+              if (node) {
+                fileInputRef.current = node;
+              } else {
+                fileInputRef.current = null;
+              }
+              return typeof ref === "function" ? ref(node) : ref;
+            }}
+          />
         {hasChildren(children, 0)
           ? null
           : (labelPosition === "afterInput" && (
@@ -294,33 +258,37 @@ const FileBox: FC<
   }
 );
 
-/*
-import React, { useState } from "react";
-const [myFile, setMyFile] = useState<File | null>(null);
-
-<FileBox
-  id="myfile"
-  name="myfile"
-  className=""
-  prompt="Lol"
-  onChange={(
-    event: React.ChangeEvent<HTMLInputElement> & {
-      target: HTMLInputElement;
-    }
-  ) => {
-    if (event.target.files !== null) {
-      setMyFile(event.target.files[0]);
-    }
-  }}
->
-  <span>My File:</span>
-</FileBox>
-
-{myFile ? myFile.name : "No File!"}
-*/
-
 type FileBoxProps = React.ComponentProps<typeof FileBox>;
 
 export type { FileBoxProps };
 
 export default FileBox;
+
+/*
+
+  @EXAMPLE:
+  
+  
+  import React, { useState } from "react";
+  const [myFile, setMyFile] = useState<File | null>(null);
+  
+  <FileBox
+    id="myfile"
+    name="myfile"
+    className=""
+    prompt="Lol"
+    onChange={(
+      event: React.ChangeEvent<HTMLInputElement> & {
+        target: HTMLInputElement;
+      }
+    ) => {
+      if (event.target.files !== null) {
+        setMyFile(event.target.files[0]);
+      }
+    }}
+  >
+    <span>My File:</span>
+  </FileBox>
+  
+  <p>{myFile ? myFile.name : "No File!"}</p>
+*/
