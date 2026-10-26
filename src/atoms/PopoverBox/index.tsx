@@ -8,9 +8,10 @@ import React, {
 } from "react";
 import { useOutsideClick } from "react-busser";
 
-import type { Ref, MutableRefObject } from "react";
+import { useGenericId, useSharedStyle } from "../../_shared/hooks";
 
-import { useGenericId, useRouteChanged } from "../../_shared/hooks";
+
+import type { Ref, MutableRefObject } from "react";
   
 const PopoverContext = createContext<{
   closeTriggerEventNameSuffix: string;
@@ -188,7 +189,7 @@ const PBox = React.forwardRef(
     }: React.ComponentProps<"section">,
     ref: Ref<HTMLElement>
   ) => {
-    const popoverStyleRef = useRef<HTMLStyleElement | null>(null);
+    //const popoverStyleRef = useRef<HTMLStyleElement | null>(null);
     const pickerBoxRef = useRef<HTMLDivElement | null>(null);
     const eventNameSuffix = useGenericId();
     const [contextValue] = useState({
@@ -198,35 +199,9 @@ const PBox = React.forwardRef(
       },
     });
 
-    useEffect(() => {
-      const styleSheetsOnly = [].slice
-        .call<StyleSheetList, [], StyleSheet[]>(window.document.styleSheets)
-        .filter((sheet) => {
-          if (sheet.ownerNode) {
-            return sheet.ownerNode.nodeName === "STYLE";
-          }
-          return false;
-        })
-        .map((sheet) => {
-          if (sheet.ownerNode && sheet.ownerNode instanceof Element) {
-            return sheet.ownerNode.id;
-          }
-          return "";
-        })
-        .filter((id) => id !== "");
-
-      if (
-        styleSheetsOnly.length > 0 &&
-        styleSheetsOnly.includes("react-busser-headless-ui_popover")
-      ) {
-        return;
-      }
-
-      const popoverStyle = window.document.createElement("style");
-      popoverStyle.id = "react-busser-headless-ui_popover";
-
-      /* eslint-disable no-useless-escape */
-      popoverStyle.innerHTML = `
+    const STYLESHEET_ID = "react-busser-headless-ui_popover";
+    /* eslint-disable no-useless-escape */
+    const BASE_CSS = `
       .popover_wrapper-box,
       .popover_trigger\[shrink-to-fit\] {
         position: relative;
@@ -265,17 +240,8 @@ const PBox = React.forwardRef(
       }
     `;
     /* eslint-enable no-useless-escape */
-
-      popoverStyleRef.current = popoverStyle;
-      window.document.head.appendChild(popoverStyle);
-
-    }, []);
-
-    useRouteChanged(() => {
-      if (popoverStyleRef.current) {
-        window.document.head.removeChild(popoverStyleRef.current);
-      }
-    });
+    
+    useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
     const [wrapperNodeRef] = useOutsideClick<HTMLElement>((wrapperNode) => {
       if (wrapperNode) {
