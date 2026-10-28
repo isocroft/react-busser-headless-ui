@@ -1,29 +1,13 @@
-import React, { FC, useRef, useState, useCallback, useEffect } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import { useTextFilteredList } from "react-busser";
 import pick from "lodash.pick";
 
-import type { ComboBoxComposite, ComboBoxItem } from "./internal";
 import { useComboBoxCore } from "./internal";
+import { useGenericId, useSharedStyle } from "../../_shared/hooks";
+import { hasChildren, isSubChild } from "../../_shared/helpers";
 
-const hasChildren = (
-  children: React.ReactNode | React.ReactNode[],
-  count: number
-): boolean => {
-  if (!Boolean(children) && count === 0) {
-    return true;
-  }
-  const childCount = React.Children.count(children);
-  return childCount === count;
-};
-
-const isSubChild = <C extends React.ReactNode>(
-  child: C,
-  tag: string
-): child is C =>
-  React.isValidElement<C>(child) &&
-  (typeof child?.type === "function"
-    ? child?.type?.name === tag
-    : String(child?.type).includes(tag));
+import type { ComboBoxComposite, ComboBoxItem } from "./internal";
+import type { FC, ComponentPropsWithRef } from "react";
 
 const useMutationObserver = (
   ref,
@@ -51,11 +35,8 @@ const useMutationObserver = (
   }, []);
 };
 
-const generateSeededRandomId = () =>
-  "a" + (Math.random() + 1).toString(36).substring(2, 7) + Date.now();
-
 type CustomElementTagProps<T extends React.ElementType> =
-  React.ComponentPropsWithRef<T> & {
+  ComponentPropsWithRef<T> & {
     as?: T;
   };
 
@@ -317,7 +298,7 @@ const SearchableList = <I extends ComboBoxItem>({
     ) => React.ReactElement;
   } & CustomElementTagProps<"section">) => {
   const oneChild = hasChildren(children, 1);
-  const [searchInputId] = useState<string>(() => generateSeededRandomId());
+  const searchInputId = useGenericId();
   const searchInputName = `search-box__${searchInputId}__${Date.now()}`;
   const [controller, handleChange] = useTextFilteredList<I>(
     {
@@ -475,7 +456,7 @@ const ComboBox = <I extends ComboBoxItem>({
 
   const comboBoxRef = useRef<HTMLDivElement | null>(null);
   const hiddenInputRef = useRef<HTMLInputElement | null>(null);
-  const [comboBoxId] = useState<string>(() => id || generateSeededRandomId());
+  const comboBoxId = useGenericId();
   const {
     composite,
     toggleOpenState,
@@ -487,77 +468,44 @@ const ComboBox = <I extends ComboBoxItem>({
     comboBoxId,
     "$__dropdown:change:broadcast"
   );
-
-  useEffect(() => {  
-    const styleSheetsOnly = [].slice.call<StyleSheetList, [], StyleSheet[]>(
-      window.document.styleSheets
-    ).filter(
-      (sheet) => {
-        if (sheet.ownerNode) {
-          return sheet.ownerNode.nodeName === "STYLE";
-        }
-        return false;
-    }).map(
-      (sheet) => {
-        if (sheet.ownerNode
-          && sheet.ownerNode instanceof Element) {
-          return sheet.ownerNode.id;
-        }
-        return "";
-    }).filter(
-      (id) => id !== ""
-    );
-
-    if (styleSheetsOnly.length > 0
-      && styleSheetsOnly.includes("react-busser-headless-ui_combo")) {
-      return;
+  const STYLESHEET_ID = "react-busser-headless-ui_combo";
+  const BASE_CSS `
+    .combo_list {
+      display: none;
+      opacity: 0;
+      transition-property: display, opacity;
+      transition-delay: 0s;
+      transition-duration: 200ms;
+      transition-timing-function: ease-in;
+      transition-behavior: allow-discrete;
     }
 
-    const comboStyle = window.document.createElement('style');
-    comboStyle.id = "react-busser-headless-ui_combo";
+    .combo_list[data-vertical-position-anchor="top"] {
+      bottom: auto;
+      top: 100%;
+    }
 
-    comboStyle.innerHTML = `
-      .combo_list {
-        display: none;
-        opacity: 0;
-        transition-property: display, opacity;
-        transition-delay: 0s;
-        transition-duration: 200ms;
-        transition-timing-function: ease-in;
-        transition-behavior: allow-discrete;
-      }
+    .combo_list[data-vertical-position-anchor="bottom"] {
+      top: auto;
+      bottom: 100%;
+    }
 
-      .combo_list[data-vertical-position-anchor="top"] {
-        bottom: auto;
-        top: 100%;
-      }
+    .combo_list[data-horizontal-position-anchor="left"] {
+      right: auto;
+      left: 0;
+    }
 
-      .combo_list[data-vertical-position-anchor="bottom"] {
-        top: auto;
-        bottom: 100%;
-      }
-
-      .combo_list[data-horizontal-position-anchor="left"] {
-        right: auto;
-        left: 0;
-      }
-
-      .combo_list[data-horizontal-position-anchor="right"] {
-        left: auto;
-        right: 0;
-      }
-    
-      .combo_list.combo_show-list {
-        display: block;
-        opacity: 1;
-      }
-    `;  
-    window.document.head.appendChild(comboStyle);  
+    .combo_list[data-horizontal-position-anchor="right"] {
+      left: auto;
+      right: 0;
+    }
   
-    return () => {  
-      window.document.head.removeChild(comboStyle);  
-    };  
-  }, []);
+    .combo_list.combo_show-list {
+      display: block;
+      opacity: 1;
+    }
+  `;
+  useSharedStyle(STYLESHEET_ID, BASE_CSS);
 
   useEffect(() => {
     if (composite.selectedIndex === -1) {
