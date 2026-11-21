@@ -1,5 +1,7 @@
 import * as React from "react";
-import { useSearchParams } from "react-router-dom";
+/* @NOTE: `useSearchParams(...)` is only defined in React-Router v6 not v5 */
+//import { useSearchParams } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 import { useEffectCallback, useBeforePageUnload } from "react-busser";
 
 import type { MutableRefObject } from "react";
@@ -11,6 +13,45 @@ export const canUseDOM =
     typeof window !== "undefined" && typeof window.document !== "undefined";
 
 let styleUsage = null;
+
+/* @NOTE: `useSearchParams(...)` is only defined in React-Router v6 not v5 */
+const useSearchParams = (canReplace = false) => {
+  const pageLocation = useLocation()
+  const history = useHistory()
+  const searchParams = new URLSearchParams(
+    pageLocation ? pageLocation.search : history.location.search
+  )
+
+  const setURLSearchParams = (
+    newSearchParams: Record<string, string> | URLSearchParams | undefined | string | string[][],
+    unloadPageOnNavigate = false
+  ) => {
+    const nextSearchParams = new URLSearchParams(newSearchParams)
+
+    const url = new URL(
+      `${pageLocation.pathname}${nextSearchParams
+        .toString()
+        .replace(/^([^?]+)/, '?$1')}`,
+      window.location.origin
+    )
+
+    if (unloadPageOnNavigate) {
+      window.location.assign(url.href)
+    } else {
+      if (newSearchParams instanceof URLSearchParams) {
+        history.replace(url.href.replace(window.location.origin, ''));
+        return;
+      }
+      if (canReplace) {
+          history.replace(url.href.replace(window.location.origin, ''))
+      } else {
+        history.push(url.href.replace(window.location.origin, ''))
+      }
+    }
+  }
+
+  return [searchParams, setURLSearchParams] as const
+};
 
 /* @HINT: `useLayoutEffect(...)` warns during SSR; fall back to useEffect on the server. */
 export const useIsomorphicLayoutEffect = canUseDOM && typeof React.useLayoutEffect === "function"
